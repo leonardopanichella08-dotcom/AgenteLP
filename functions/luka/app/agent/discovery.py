@@ -194,6 +194,14 @@ class ApifyDiscoveryProvider(DiscoveryProvider):
             link = _dig(it, "post_url", "url", "postUrl", "link", "permalink") or ""
             if not text or not link:
                 continue
+            low = text.lower()
+            # scarta annunci di lavoro e post troppo scarni (poco "virali")
+            if len(text) < 120 and "?" not in text:
+                continue
+            if any(k in low for k in _JOB_AD_MARKERS) and not any(
+                k in q.niche.lower() for k in ("hiring", "recruit", "talent", "hr")
+            ):
+                continue
 
             reactions = _num(stats, "total_reactions", "reactions_count", "likes") or _num(
                 it, "numLikes", "likesCount", "totalReactionCount"
@@ -204,6 +212,9 @@ class ApifyDiscoveryProvider(DiscoveryProvider):
             reposts = _num(stats, "shares", "reposts", "shares_count") or _num(
                 it, "numShares", "sharesCount"
             )
+            # troppo poco engagement per essere "virale"
+            if reactions + 3 * comments + 5 * reposts < 8:
+                continue
             views = _num(stats, "views", "impressions") or _num(it, "numViews", "views")
             if not views:
                 # l'actor non espone le views: stima da engagement per il ranking
@@ -254,8 +265,18 @@ class ApifyDiscoveryProvider(DiscoveryProvider):
             )
 
         out.sort(key=lambda p: p.score, reverse=True)
+        if not out:
+            # Apify non ha restituito post utili: non lasciare l'utente a mani vuote
+            return FreeDiscoveryProvider().discover(q)
         return out[: q.limit]
 
+
+_JOB_AD_MARKERS = (
+    "we're hiring", "we are hiring", "now hiring", "hiring a", "hiring an",
+    "job opening", "apply now", "join our team", "we're looking for",
+    "stiamo assumendo", "offerta di lavoro", "cerchiamo un", "cerchiamo una",
+    "candidati ora", "unisciti al team",
+)
 
 _GEO_TEXT_HINTS = {
     "italy": {"italia", "italy", "milano", "roma", "torino", " it ", "italian"},

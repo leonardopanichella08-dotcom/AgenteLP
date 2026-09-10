@@ -68,7 +68,7 @@ export interface DiscoveredPost {
   responses: GeneratedResponse[];
 }
 
-export interface TaskDetail {
+export interface TaskSummary {
   id: string;
   agent_key: string;
   type: string;
@@ -79,6 +79,9 @@ export interface TaskDetail {
   queued_at: string;
   started_at: string | null;
   finished_at: string | null;
+}
+
+export interface TaskDetail extends TaskSummary {
   posts: DiscoveredPost[];
 }
 

@@ -1,4 +1,4 @@
-import type { Connection, KbDocument, Meta, TaskDetail } from "./types";
+import type { Connection, KbDocument, Meta, TaskDetail, TaskSummary } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -39,6 +39,10 @@ export const api = {
   },
   deleteDocument: (connId: string, docId: string) =>
     req<void>(`/api/connections/${connId}/documents/${docId}`, { method: "DELETE" }),
+  deleteConnection: (id: string) =>
+    req<void>(`/api/connections/${id}`, { method: "DELETE" }),
+
+  tasks: () => req<TaskSummary[]>("/api/tasks"),
 
   runDiscovery: (body: {
     connection_id: string;
