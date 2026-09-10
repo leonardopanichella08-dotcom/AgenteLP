@@ -184,10 +184,10 @@ function NewRunForm({
         <button
           onClick={() => onSubmit({ startup_name: name.trim(), input_text: text.trim(), max_iterations: iters })}
           disabled={pending || name.trim().length < 2 || text.trim().length < 40}
-          className="inline-flex items-center gap-2 rounded-lg bg-brand-tech px-4 py-2.5 text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-hover disabled:opacity-50"
         >
-          {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Skull className="h-4 w-4" />}
-          Avvia analisi distruttiva
+          {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          Continua → allega documenti
         </button>
       </div>
     </Card>
@@ -195,9 +195,14 @@ function NewRunForm({
 }
 
 function RunView({ run, stepError, onReset }: { run: AndreaRun; stepError: string | null; onReset: () => void }) {
+  const qc = useQueryClient();
   const del = useMutation({
     mutationFn: () => api.andreaDelete(run.id),
     onSuccess: onReset,
+  });
+  const start = useMutation({
+    mutationFn: () => api.andreaStep(run.id),
+    onSuccess: (r) => qc.setQueryData(["andrea-run", run.id], r),
   });
   const progress = run.status === "running"
     ? Math.round((run.current_iteration / run.max_iterations) * 100)
@@ -211,7 +216,7 @@ function RunView({ run, stepError, onReset }: { run: AndreaRun; stepError: strin
           <Pill tone={run.status === "succeeded" ? "ok" : run.status === "failed" ? "warn" : "brand"}>
             {run.status === "running"
               ? `iterazione ${run.current_iteration}/${run.max_iterations}`
-              : run.status}
+              : run.status === "draft" ? "bozza" : run.status}
           </Pill>
           <button
             onClick={() => del.mutate()}
@@ -222,6 +227,24 @@ function RunView({ run, stepError, onReset }: { run: AndreaRun; stepError: strin
           </button>
         </div>
       </div>
+
+      {run.status === "draft" && (
+        <Card title="Materiale della startup">
+          <p className="-mt-2 mb-3 whitespace-pre-line text-[13px] text-ink-soft">{run.input_text}</p>
+          <DocPanel run={run} />
+          {start.isError && (
+            <p className="mt-3 text-[12px] text-warn">{(start.error as Error).message}</p>
+          )}
+          <button
+            onClick={() => start.mutate()}
+            disabled={start.isPending}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-tech px-4 py-2.5 text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
+          >
+            {start.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Skull className="h-4 w-4" />}
+            Avvia analisi distruttiva
+          </button>
+        </Card>
+      )}
 
       {run.status === "running" && (
         <div>
@@ -380,6 +403,63 @@ function fmtNum(v: number): string {
   return String(v);
 }
 
+function DocPanel({ run }: { run: AndreaRun }) {
+  const qc = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const upload = useMutation({
+    mutationFn: (file: File) => api.andreaUploadDoc(run.id, file),
+    onSuccess: (r) => qc.setQueryData(["andrea-run", run.id], r),
+  });
+  const del = useMutation({
+    mutationFn: (docId: string) => api.andreaDeleteDoc(run.id, docId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["andrea-run", run.id] }),
+  });
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2">
+        {run.documents.map((d) => (
+          <span
+            key={d.id}
+            className="inline-flex items-center gap-1.5 rounded-md bg-surface-sunken px-2 py-1 text-[11px] text-ink-soft"
+          >
+            <FileText className="h-3 w-3" /> {d.filename}
+            <button onClick={() => del.mutate(d.id)} className="ml-1 text-ink-faint hover:text-warn">
+              ×
+            </button>
+          </span>
+        ))}
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={upload.isPending}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-[12px] font-medium text-ink-soft hover:border-line-strong disabled:opacity-50"
+        >
+          {upload.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5" />}
+          Allega PDF / Excel / Word
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          hidden
+          accept=".pdf,.docx,.xlsx,.xlsm,.txt,.md,.csv"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) upload.mutate(f);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      {upload.isError && (
+        <p className="mt-1.5 text-[11px] text-warn">{(upload.error as Error).message}</p>
+      )}
+      <p className="mt-1.5 text-[11px] text-ink-faint">
+        Pitch deck, piano finanziario, business plan… il testo viene estratto e aggiunto al
+        contesto dell'analisi.
+      </p>
+    </div>
+  );
+}
+
 /* mini renderer markdown */
 function Md({ text }: { text: string }) {
   const lines = (text || "").split("\n");
@@ -404,7 +484,8 @@ function Md({ text }: { text: string }) {
     else if (/^[-*]\s+/.test(l)) bullets.push(l.replace(/^[-*]\s+/, ""));
     else if (l.startsWith("|")) {
       const cells = l.split("|").map((c) => c.trim()).filter(Boolean);
-      if (cells.join("").replace(/[-:\s]/g, "")) bullets.push(cells.join(" · "));
+      const isSep = /^[\s|:-]+$/.test(l);
+      if (!isSep && cells.length) bullets.push(cells.join(" · "));
     }
     else { flush(i); out.push(<p key={i} className="my-1.5 text-ink-soft">{clean(l)}</p>); }
   });

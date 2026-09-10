@@ -236,6 +236,16 @@ class AndreaIterationOut(BaseModel):
         return {} if v is None else dict(v)
 
 
+class AndreaDocumentOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    filename: str
+    mime_type: str
+    size_bytes: int
+    created_at: datetime
+
+
 class AndreaRunOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -255,6 +265,7 @@ class AndreaRunOut(BaseModel):
     created_at: datetime
     finished_at: datetime | None = None
     iterations: list[AndreaIterationOut] = []
+    documents: list[AndreaDocumentOut] = []
 
     @field_validator("lethal_flaws", mode="before")
     @classmethod

@@ -265,6 +265,9 @@ class AndreaRun(Base):
     iterations: Mapped[list[AndreaIteration]] = relationship(
         back_populates="run", cascade="all, delete-orphan", order_by="AndreaIteration.index"
     )
+    documents: Mapped[list[AndreaDocument]] = relationship(
+        cascade="all, delete-orphan", order_by="AndreaDocument.created_at"
+    )
 
 
 class AndreaIteration(Base):
@@ -285,3 +288,19 @@ class AndreaIteration(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 
     run: Mapped[AndreaRun] = relationship(back_populates="iterations")
+
+
+class AndreaDocument(Base):
+    """Documenti allegati a un run ANDREA (pitch deck, piano finanziario, ecc.)."""
+
+    __tablename__ = "andrea_documents"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uid)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("andrea_runs.id", ondelete="CASCADE"), index=True
+    )
+    filename: Mapped[str] = mapped_column(String(400))
+    mime_type: Mapped[str] = mapped_column(String(120))
+    size_bytes: Mapped[int] = mapped_column(Integer, default=0)
+    extracted_text: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)

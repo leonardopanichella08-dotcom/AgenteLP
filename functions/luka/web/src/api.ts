@@ -95,6 +95,13 @@ export const api = {
   andreaCreate: (body: { startup_name: string; input_text: string; max_iterations: number }) =>
     req<AndreaRun>("/api/andrea/runs", { method: "POST", body: JSON.stringify(body) }),
   andreaStep: (id: string) => req<AndreaRun>(`/api/andrea/runs/${id}/step`, { method: "POST" }),
+  andreaUploadDoc: (id: string, file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return req<AndreaRun>(`/api/andrea/runs/${id}/documents`, { method: "POST", body: fd });
+  },
+  andreaDeleteDoc: (id: string, docId: string) =>
+    req<void>(`/api/andrea/runs/${id}/documents/${docId}`, { method: "DELETE" }),
   andreaDelete: (id: string) => req<void>(`/api/andrea/runs/${id}`, { method: "DELETE" }),
   andreaArtifactUrl: (id: string, kind: "report_pdf" | "narrative_pdf" | "financial_xlsx") =>
     `${BASE}/api/andrea/runs/${id}/artifact/${kind}`,

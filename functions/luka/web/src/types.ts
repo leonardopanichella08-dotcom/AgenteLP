@@ -119,11 +119,19 @@ export interface AndreaIteration {
   created_at: string;
 }
 
+export interface AndreaDocument {
+  id: string;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string;
+}
+
 export interface AndreaRun {
   id: string;
   startup_name: string;
   input_text: string;
-  status: "running" | "succeeded" | "failed";
+  status: "draft" | "running" | "succeeded" | "failed";
   current_iteration: number;
   max_iterations: number;
   systemic_map: string;
@@ -136,4 +144,5 @@ export interface AndreaRun {
   created_at: string;
   finished_at: string | null;
   iterations: AndreaIteration[];
+  documents: AndreaDocument[];
 }
