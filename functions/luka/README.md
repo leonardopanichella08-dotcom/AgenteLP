@@ -112,7 +112,6 @@ functions/luka/
       connections.py     CRUD profili + rianalisi onboarding
       knowledge.py       upload / lista / delete documenti
       tasks.py           POST /api/tasks/discovery  (ciclo completo), regenerate
-  api/index.py           entry point Vercel (ASGI)
   tests/                 pytest: flusso API, unit agenti, crypto+OAuth
   web/                   React 18 + Vite + Tailwind + TanStack Query
     src/App.tsx          dashboard completa (sidebar, topbar, KB card, filtri, feed)
@@ -152,34 +151,34 @@ cifratura token + macchina a stati OAuth.
 
 ---
 
-## 6. Deploy su Vercel (free tier)
+## 6. Deploy su Vercel — GIÀ FATTO
 
-**DB:** Postgres gratuito su [Neon](https://neon.tech) (nessuna carta), copia
-la connection string.
+**Live:** https://luka-kappa-mocha.vercel.app · progetto Vercel `leonardo-8bdb/luka`
+· DB Postgres su [Neon](https://neon.tech) (free) · Root Directory `functions/luka`.
 
-### Opzione A — progetto unico (frontend statico + API Python)
+**Come funziona il deploy** (niente `outputDirectory`, niente rewrite):
+Vercel rileva FastAPI e instrada **ogni** richiesta a `app/main.py`. È
+`app/main.py` stesso che serve il frontend Vite (`web/dist`): `/` e ogni rotta
+lato client → `index.html`, gli asset dai file reali, `/api/*` resta sui router.
 
-1. Importa il repo `AgenteLP` su Vercel, **Root Directory = `functions/luka`**.
-2. Environment Variables (tutte opzionali tranne `DATABASE_URL` in prod):
-   - `DATABASE_URL` = connection string Neon (`postgres://...?sslmode=require`)
-   - `APP_ENCRYPTION_KEY` = chiave Fernet (obbligatoria se usi l'OAuth)
-   - `GEMINI_API_KEY` (gratis) o `ANTHROPIC_API_KEY`, `APIFY_TOKEN`, `LINKEDIN_CLIENT_ID/SECRET` — quando le hai
-   - `LINKEDIN_REDIRECT_URI` = `https://<tuo-dominio>/api/auth/linkedin/callback`
-   - `FRONTEND_URL` = `https://<tuo-dominio>`
-   - `CORS_ORIGINS` = `https://<tuo-dominio>`
-3. Deploy. `vercel.json` builda `web/` come statico e serve `api/index.py`
-   come funzione Python; `/api/*` viene instradato lì.
+**Redeploy:**
+```bash
+cd functions/luka && vercel deploy --prod      # manuale
+# oppure semplicemente:  git push               # auto-deploy (repo collegato)
+```
 
-### Opzione B — due progetti (più robusta per i job lunghi)
+**Env vars di produzione già impostate:** `DATABASE_URL` (Neon pooled),
+`GEMINI_API_KEY`, `GEMINI_MODEL`, `LLM_PROVIDER=auto`, `APP_ENCRYPTION_KEY`,
+`APIFY_TOKEN`, `DISCOVERY_PROVIDER=free`, `CORS_ORIGINS=*`, `FRONTEND_URL`.
+Aggiungerne / modificarne:
+```bash
+vercel env add NOME production
+vercel env ls production
+```
 
-| Progetto | Root Directory | Note |
-|---|---|---|
-| `agentelp-luka-api` | `functions/luka` | preset *Other*; Vercel rileva `api/index.py` + `requirements.txt` |
-| `agentelp-luka-web` | `functions/luka/web` | preset *Vite*; env `VITE_API_BASE = https://…-api.vercel.app` |
-
-> **Job lunghi:** con molte varianti + Claude la generazione può avvicinarsi
-> al limite di durata delle Function. Per volumi seri: coda (Upstash QStash)
-> + una function per post. Vedi [`docs/architecture.md`](../../docs/architecture.md).
+> **Job lunghi:** con molte varianti la generazione può avvicinarsi al limite
+> di durata delle Function. Per volumi seri: coda (Upstash QStash) + una
+> function per post. Vedi [`docs/architecture.md`](../../docs/architecture.md).
 
 ---
 
