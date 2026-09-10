@@ -10,9 +10,10 @@ impatto**, esecuzione assistita via deep-link.
 > [`docs/architecture.md`](../../docs/architecture.md). Nessuna logica
 > condivisa con **ANDREA**.
 
-> **Gira gratis.** Nessuna chiave obbligatoria: senza `ANTHROPIC_API_KEY`
-> Luka lavora in *demo mode* (risposte da template) su un dataset di post
-> incluso. Aggiungendo la chiave passa alla generazione con Claude.
+> **Gira 100% gratis, senza account.** Discovery da Hacker News + Reddit,
+> generazione in *demo mode* (template). Per risposte di qualità a costo zero:
+> chiave **Gemini** gratuita (nessuna carta). Chiave **Anthropic** opzionale
+> per la qualità massima, a consumo.
 
 ---
 
@@ -52,7 +53,7 @@ Scorciatoia Windows: `./dev.ps1` avvia tutto.
 | **Discovery** (`DISCOVERY_PROVIDER=free`) | **Hacker News + Reddit**: contenuti che performano ORA sulla nicchia. 100% gratis, nessuna chiave. Ricade sul dataset locale se offline. |
 | Incolla-post manuale | `POST /api/tasks/analyze` o pannello "Oppure incolla un post": Luka lavora su post LinkedIn reali incollati a mano — sempre accurato, sempre gratis |
 | Ranking | engagement rate ponderato × recency × reach (half-life adattiva per fonte) |
-| Generazione commenti/repost | *demo mode*: template coerenti con post + contesto |
+| Generazione commenti/repost | *demo mode* (template). Con `GEMINI_API_KEY` (gratis) → Gemini; con `ANTHROPIC_API_KEY` → Claude |
 | Dashboard | lista post + risposte + Copia + deep-link "Apri su LinkedIn" |
 
 > **Nota:** la discovery `free` non restituisce *post LinkedIn* ma il **segnale
@@ -65,14 +66,21 @@ Scorciatoia Windows: `./dev.ps1` avvia tutto.
 Copia `.env.example` in `.env` e compila solo ciò che ti serve:
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-...      # -> generazione + onboarding con Claude (qualità)
+# generazione: 100% GRATIS (nessuna carta) — https://aistudio.google.com
+GEMINI_API_KEY=AIza...
+GEMINI_MODEL=gemini-2.0-flash
+
+# oppure qualità massima, a consumo
+ANTHROPIC_API_KEY=sk-ant-...
 ANTHROPIC_MODEL=claude-sonnet-5
 
-DISCOVERY_PROVIDER=apify          # -> post LinkedIn reali (Apify, a pagamento)
+# post LinkedIn letterali via Apify (piano di prova, credito gratuito ~$5/mese)
+DISCOVERY_PROVIDER=apify
 APIFY_TOKEN=apify_api_...
 ```
 
-Il resto dell'app non cambia: stessi endpoint, stessa UI.
+`LLM_PROVIDER=auto` (default) sceglie **Gemini → Anthropic → demo** in base
+alle chiavi presenti. Il resto dell'app non cambia: stessi endpoint, stessa UI.
 
 ---
 
@@ -94,8 +102,8 @@ functions/luka/
     data/seed_posts.json dataset discovery "sample"
     agent/
       prompt.py          System Prompt di Luka + schema tool + prompt caching
-      engine.py          generate_engagement(): Claude oppure demo generator
-      onboarding.py      sintesi brand profile: Claude oppure euristica
+      engine.py          generate_engagement(): Gemini | Claude | demo generator
+      onboarding.py      sintesi brand profile: Gemini | Claude | euristica
       discovery.py       DiscoveryProvider: Sample | Apify (actor no-cookies)
       ranking.py         engagement_score()
       retriever.py       chunking + LexicalRetriever (BM25-lite, zero dipendenze)
@@ -155,7 +163,7 @@ la connection string.
 2. Environment Variables (tutte opzionali tranne `DATABASE_URL` in prod):
    - `DATABASE_URL` = connection string Neon (`postgres://...?sslmode=require`)
    - `APP_ENCRYPTION_KEY` = chiave Fernet (obbligatoria se usi l'OAuth)
-   - `ANTHROPIC_API_KEY`, `APIFY_TOKEN`, `LINKEDIN_CLIENT_ID/SECRET` — quando le hai
+   - `GEMINI_API_KEY` (gratis) o `ANTHROPIC_API_KEY`, `APIFY_TOKEN`, `LINKEDIN_CLIENT_ID/SECRET` — quando le hai
    - `LINKEDIN_REDIRECT_URI` = `https://<tuo-dominio>/api/auth/linkedin/callback`
    - `FRONTEND_URL` = `https://<tuo-dominio>`
    - `CORS_ORIGINS` = `https://<tuo-dominio>`

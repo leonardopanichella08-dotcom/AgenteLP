@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
+
+import httpx
 
 from ..config import get_settings
 from .prompt import (
@@ -14,6 +17,7 @@ from .prompt import (
 )
 
 MAX_TOKENS = 1600
+_ENGAGEMENT_SCHEMA = SUBMIT_TOOL["input_schema"]
 
 
 def generate_engagement(
@@ -25,17 +29,101 @@ def generate_engagement(
     """Ritorna {prompt_version, model, tokens_input, tokens_output, output}.
 
     `output` = dict conforme allo schema SUBMIT_TOOL.
-    Usa Claude se ANTHROPIC_API_KEY e' presente, altrimenti il demo generator.
+    Provider: Gemini (gratis) -> Anthropic (a consumo) -> demo generator.
+    Un errore del provider LLM ricade sempre sul demo: l'app non si rompe mai.
     """
-    settings = get_settings()
-    if settings.has_llm:
-        try:
+    provider = get_settings().active_llm
+    try:
+        if provider == "gemini":
+            return _generate_with_gemini(ctx, post, rag_snippets, n_comment_variants)
+        if provider == "anthropic":
             return _generate_with_claude(ctx, post, rag_snippets, n_comment_variants)
-        except Exception as exc:  # fallback robusto: l'app non deve mai rompersi
-            demo = _demo_generate(ctx, post, n_comment_variants)
-            demo["model"] = f"demo (fallback: {type(exc).__name__})"
-            return demo
+    except Exception as exc:  # noqa: BLE001
+        demo = _demo_generate(ctx, post, n_comment_variants)
+        demo["model"] = f"demo (fallback {provider}: {type(exc).__name__})"
+        return demo
     return _demo_generate(ctx, post, n_comment_variants)
+
+
+# ──────────────────────────────── Gemini (gratis) ────────────────────────────────
+
+
+def _gemini_prompt(ctx: BrandContext, post: DiscoveredPost, rag: list[str] | None, n: int) -> tuple[str, str]:
+    blocks = build_system_blocks(ctx, rag)
+    system_text = "\n\n".join(b["text"] for b in blocks)
+    user_text = (
+        build_user_message(post, n)
+        + "\n\nRispondi SOLO con un oggetto JSON conforme a questo schema "
+        "(nessun testo attorno):\n"
+        + json.dumps(_ENGAGEMENT_SCHEMA, ensure_ascii=False)
+    )
+    return system_text, user_text
+
+
+def _generate_with_gemini(
+    ctx: BrandContext,
+    post: DiscoveredPost,
+    rag_snippets: list[str] | None,
+    n: int,
+) -> dict[str, Any]:
+    s = get_settings()
+    system_text, user_text = _gemini_prompt(ctx, post, rag_snippets, n)
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{s.gemini_model}:generateContent"
+    )
+    body = {
+        "systemInstruction": {"parts": [{"text": system_text}]},
+        "contents": [{"role": "user", "parts": [{"text": user_text}]}],
+        "generationConfig": {
+            "temperature": 0.9,
+            "maxOutputTokens": MAX_TOKENS,
+            "responseMimeType": "application/json",
+            "responseSchema": _gemini_schema(_ENGAGEMENT_SCHEMA),
+        },
+    }
+    with httpx.Client(timeout=60) as c:
+        r = c.post(url, params={"key": s.gemini_api_key}, json=body)
+        r.raise_for_status()
+        data = r.json()
+
+    parts = data["candidates"][0]["content"]["parts"]
+    text = "".join(p.get("text", "") for p in parts)
+    output = json.loads(text)
+    usage = data.get("usageMetadata", {})
+    return {
+        "prompt_version": PROMPT_VERSION,
+        "model": s.gemini_model,
+        "tokens_input": usage.get("promptTokenCount"),
+        "tokens_output": usage.get("candidatesTokenCount"),
+        "output": _coerce_output(output),
+    }
+
+
+def _gemini_schema(schema: dict) -> dict:
+    """Adatta il JSON-Schema in ingresso al sottoinsieme accettato da Gemini."""
+    allowed = {"type", "description", "enum", "items", "properties", "required", "nullable"}
+    out: dict[str, Any] = {}
+    for k, v in schema.items():
+        if k not in allowed:
+            continue
+        if k == "type" and isinstance(v, str):
+            out[k] = v.upper()
+        elif k == "properties":
+            out[k] = {pk: _gemini_schema(pv) for pk, pv in v.items()}
+        elif k == "items":
+            out[k] = _gemini_schema(v)
+        else:
+            out[k] = v
+    return out
+
+
+def _coerce_output(output: Any) -> dict[str, Any]:
+    if not isinstance(output, dict):
+        return {"skip": True, "skip_reason": "output non valido", "comments": []}
+    output.setdefault("skip", False)
+    output.setdefault("comments", [])
+    return output
 
 
 # ──────────────────────────────── Claude ────────────────────────────────

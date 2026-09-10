@@ -60,7 +60,8 @@ def meta():
     s = get_settings()
     return {
         "generation_mode": "llm" if s.has_llm else "demo",
-        "model": s.anthropic_model if s.has_llm else None,
+        "llm_provider": s.active_llm,
+        "model": s.active_model,
         "discovery_provider": s.discovery_label,
         "linkedin_oauth": s.has_linkedin_oauth,
         "geo_options": [

@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 from typing import Any
 
+import httpx
+
 from ..config import get_settings
 
 _FIELDS = ("mission", "value_proposition", "icp", "market_context", "tone_of_voice")
@@ -24,6 +26,26 @@ _ONBOARD_TOOL = {
 }
 
 
+def _onboard_prompt(
+    display_name: str,
+    account_type: str,
+    headline: str | None,
+    industry: str | None,
+    raw_about: str | None,
+    kb_snippets: list[str] | None,
+) -> str:
+    kb = "\n".join(f"- {s}" for s in (kb_snippets or [])) or "(nessun documento)"
+    return (
+        "Analizza il seguente profilo LinkedIn e sintetizza la scheda per un agente "
+        "di content strategy. Sii concreto, niente buzzword.\n\n"
+        f"Nome: {display_name} ({account_type})\n"
+        f"Headline: {headline or '-'}\n"
+        f"Industry: {industry or '-'}\n"
+        f"Descrizione/bio/esperienze:\n{raw_about or '-'}\n\n"
+        f"Estratti da documenti caricati:\n{kb}\n"
+    )
+
+
 def synthesize_brand_profile(
     *,
     display_name: str,
@@ -33,15 +55,62 @@ def synthesize_brand_profile(
     raw_about: str | None,
     kb_snippets: list[str] | None = None,
 ) -> dict[str, Any]:
-    settings = get_settings()
-    if settings.has_llm:
-        try:
-            return _synthesize_with_claude(
-                display_name, account_type, headline, industry, raw_about, kb_snippets
-            )
-        except Exception:
-            pass
+    provider = get_settings().active_llm
+    args = (display_name, account_type, headline, industry, raw_about, kb_snippets)
+    try:
+        if provider == "gemini":
+            return _synthesize_with_gemini(*args)
+        if provider == "anthropic":
+            return _synthesize_with_claude(*args)
+    except Exception:  # noqa: BLE001
+        pass
     return _synthesize_heuristic(display_name, account_type, headline, industry, raw_about)
+
+
+def _synthesize_with_gemini(
+    display_name: str,
+    account_type: str,
+    headline: str | None,
+    industry: str | None,
+    raw_about: str | None,
+    kb_snippets: list[str] | None,
+) -> dict[str, Any]:
+    s = get_settings()
+    schema = {
+        "type": "OBJECT",
+        "properties": {
+            k: {"type": "STRING"} for k in _FIELDS
+        },
+        "required": list(_FIELDS),
+    }
+    body = {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": _onboard_prompt(
+                    display_name, account_type, headline, industry, raw_about, kb_snippets
+                )}],
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.4,
+            "maxOutputTokens": 900,
+            "responseMimeType": "application/json",
+            "responseSchema": schema,
+        },
+    }
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{s.gemini_model}:generateContent"
+    )
+    with httpx.Client(timeout=45) as c:
+        r = c.post(url, params={"key": s.gemini_api_key}, json=body)
+        r.raise_for_status()
+        data = r.json()
+    text = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
+    out = json.loads(text)
+    out["generated_by_model"] = s.gemini_model
+    return out
 
 
 def _synthesize_with_claude(

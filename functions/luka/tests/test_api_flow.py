@@ -7,6 +7,8 @@ def test_health_and_meta(client):
     assert client.get("/api/health").json() == {"status": "ok"}
     meta = client.get("/api/meta").json()
     assert meta["generation_mode"] == "demo"
+    assert meta["llm_provider"] == "demo"
+    assert meta["model"] is None
     assert meta["discovery_provider"] == "sample"
     assert meta["linkedin_oauth"] is False
     assert {o["value"] for o in meta["geo_options"]} == {"world", "europe", "italy"}

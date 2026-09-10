@@ -84,8 +84,9 @@ export interface TaskDetail {
 
 export interface Meta {
   generation_mode: "llm" | "demo";
+  llm_provider: "gemini" | "anthropic" | "demo";
   model: string | null;
-  discovery_provider: "sample" | "apify";
+  discovery_provider: "free" | "sample" | "apify";
   linkedin_oauth: boolean;
   geo_options: { value: Geo; label: string }[];
 }

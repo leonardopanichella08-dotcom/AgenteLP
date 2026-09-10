@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./luka.db"
 
     # ── LLM ────────────────────────────────────────────────
+    # provider: "auto" sceglie gemini -> anthropic -> demo in base alle chiavi.
+    llm_provider: str = "auto"  # "auto" | "gemini" | "anthropic" | "demo"
+    # Gemini: chiave gratuita da https://aistudio.google.com (NESSUNA carta).
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.0-flash"
+    # Anthropic: qualità migliore, ma a consumo.
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-sonnet-5"
 
@@ -37,8 +43,39 @@ class Settings(BaseSettings):
     cors_origins: str = "*"
 
     @property
-    def has_llm(self) -> bool:
+    def has_gemini(self) -> bool:
+        return bool(self.gemini_api_key)
+
+    @property
+    def has_anthropic(self) -> bool:
         return bool(self.anthropic_api_key)
+
+    @property
+    def active_llm(self) -> str:
+        """Provider effettivo: 'gemini' | 'anthropic' | 'demo'."""
+        if self.llm_provider == "gemini":
+            return "gemini" if self.has_gemini else "demo"
+        if self.llm_provider == "anthropic":
+            return "anthropic" if self.has_anthropic else "demo"
+        if self.llm_provider == "demo":
+            return "demo"
+        # auto
+        if self.has_gemini:
+            return "gemini"
+        if self.has_anthropic:
+            return "anthropic"
+        return "demo"
+
+    @property
+    def has_llm(self) -> bool:
+        return self.active_llm != "demo"
+
+    @property
+    def active_model(self) -> str | None:
+        return {
+            "gemini": self.gemini_model,
+            "anthropic": self.anthropic_model,
+        }.get(self.active_llm)
 
     @property
     def has_apify(self) -> bool:

@@ -93,3 +93,33 @@ def test_system_blocks_use_prompt_caching():
     blocks = build_system_blocks(ctx, ["snippet uno", "snippet due"])
     assert blocks[0]["cache_control"] == {"type": "ephemeral"}
     assert "snippet uno" in blocks[1]["text"]
+
+
+def test_llm_provider_selection(monkeypatch):
+    from app.config import Settings
+
+    assert Settings(llm_provider="auto").active_llm == "demo"
+    assert Settings(llm_provider="auto", gemini_api_key="g").active_llm == "gemini"
+    assert Settings(llm_provider="auto", anthropic_api_key="a").active_llm == "anthropic"
+    # gemini vince su anthropic in auto (costo zero prima)
+    assert Settings(llm_provider="auto", gemini_api_key="g", anthropic_api_key="a").active_llm == "gemini"
+    # scelta esplicita rispettata, con fallback a demo se manca la chiave
+    assert Settings(llm_provider="anthropic", gemini_api_key="g").active_llm == "demo"
+    assert Settings(llm_provider="demo", gemini_api_key="g").active_llm == "demo"
+
+
+def test_gemini_schema_adapter():
+    from app.agent.engine import _ENGAGEMENT_SCHEMA, _gemini_schema
+
+    g = _gemini_schema(_ENGAGEMENT_SCHEMA)
+    assert g["type"] == "OBJECT"
+    assert g["properties"]["comments"]["type"] == "ARRAY"
+    assert g["properties"]["comments"]["items"]["properties"]["body"]["type"] == "STRING"
+    # chiavi non supportate da Gemini rimosse
+    assert "additionalProperties" not in json_dumps(g)
+
+
+def json_dumps(obj):
+    import json
+
+    return json.dumps(obj)
