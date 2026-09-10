@@ -2,13 +2,29 @@ from __future__ import annotations
 
 from sqlalchemy import select
 
+from .andrea.brain_seed import SEED_LAWS
 from .db import SessionLocal
 from .deps import get_or_create_user
-from .models import BrandProfile, LinkedInConnection, SearchConfig
+from .models import BrandProfile, LinkedInConnection, SearchConfig, SimulatorLaw
+
+
+def seed_brain() -> None:
+    """Popola il CORE SIMULATOR BRAIN con le leggi di partenza. Idempotente."""
+    db = SessionLocal()
+    try:
+        have = {c for c in db.scalars(select(SimulatorLaw.code))}
+        for law in SEED_LAWS:
+            if law["code"] in have:
+                continue
+            db.add(SimulatorLaw(**law))
+        db.commit()
+    finally:
+        db.close()
 
 
 def seed_demo() -> None:
     """Crea un utente + due connessioni demo se il DB e' vuoto. Idempotente."""
+    seed_brain()
     db = SessionLocal()
     try:
         user = get_or_create_user(db)

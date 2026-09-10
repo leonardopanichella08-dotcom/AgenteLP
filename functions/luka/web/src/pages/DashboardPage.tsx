@@ -17,9 +17,9 @@ const AGENTS = [
   {
     key: "andrea",
     name: "ANDREA",
-    desc: "Parsing Excel, simulazioni what-if, metriche e spiegazioni AI. In arrivo.",
-    status: "in arrivo" as const,
-    to: null,
+    desc: "Incubazione reversiva: distrugge una startup in 10 iterazioni, cervello di leggi di mercato, report + piano finanziario con formule vive.",
+    status: "attivo" as const,
+    to: "/andrea",
     icon: Wand2,
   },
 ];
@@ -37,7 +37,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Funzioni attive" value="1" sub="LUKA" />
+        <Stat label="Funzioni attive" value="2" sub="LUKA · ANDREA" />
         <Stat label="Profili collegati" value={String(connections.length)} sub="LinkedIn" />
         <Stat
           label="Motore"

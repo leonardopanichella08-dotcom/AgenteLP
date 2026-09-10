@@ -221,3 +221,67 @@ class GeneratedResponse(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 
     post: Mapped[DiscoveredPost] = relationship(back_populates="responses")
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  ANDREA — A.I.R.S. (Agente di Incubazione Reversiva e Simulazione)
+# ══════════════════════════════════════════════════════════════════════
+
+
+class SimulatorLaw(Base):
+    """Cervello permanente: leggi universali di mercato che crescono a ogni run."""
+
+    __tablename__ = "simulator_laws"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uid)
+    code: Mapped[str] = mapped_column(String(24), index=True)  # es. "P-1", "GTM-2"
+    module: Mapped[str] = mapped_column(String(64))  # "Pricing", "Go-to-market", ...
+    title: Mapped[str] = mapped_column(Text)
+    body: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(200), default="")  # "[FONTE: Progetto, Anno]"
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+
+class AndreaRun(Base):
+    __tablename__ = "andrea_runs"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uid)
+    user_id: Mapped[str] = mapped_column(String(32), index=True)
+    startup_name: Mapped[str] = mapped_column(String(200))
+    input_text: Mapped[str] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(16), default="running")  # running|succeeded|failed
+    current_iteration: Mapped[int] = mapped_column(Integer, default=0)
+    max_iterations: Mapped[int] = mapped_column(Integer, default=10)
+    systemic_map: Mapped[str] = mapped_column(Text, default="")
+    lethal_flaws: Mapped[list] = mapped_column(JSON, default=list)
+    final_report: Mapped[str] = mapped_column(Text, default="")
+    narrative: Mapped[str] = mapped_column(Text, default="")
+    assumptions: Mapped[dict] = mapped_column(JSON, default=dict)
+    model: Mapped[str | None] = mapped_column(String(64))
+    error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+    iterations: Mapped[list[AndreaIteration]] = relationship(
+        back_populates="run", cascade="all, delete-orphan", order_by="AndreaIteration.index"
+    )
+
+
+class AndreaIteration(Base):
+    __tablename__ = "andrea_iterations"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uid)
+    run_id: Mapped[str] = mapped_column(
+        ForeignKey("andrea_runs.id", ondelete="CASCADE"), index=True
+    )
+    index: Mapped[int] = mapped_column(Integer)  # 1..10
+    lethal_flaw: Mapped[str] = mapped_column(Text, default="")
+    stress_test: Mapped[str] = mapped_column(Text, default="")
+    research_notes: Mapped[str] = mapped_column(Text, default="")
+    redesign_prompt: Mapped[str] = mapped_column(Text, default="")
+    version_md: Mapped[str] = mapped_column(Text, default="")
+    key_numbers: Mapped[dict] = mapped_column(JSON, default=dict)
+    citations: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+    run: Mapped[AndreaRun] = relationship(back_populates="iterations")

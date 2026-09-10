@@ -191,3 +191,77 @@ class AnalyzeIn(BaseModel):
     niche: str = "Manuale"
     posts: list[ManualPost] = Field(min_length=1, max_length=10)
     variants_per_post: int = Field(default=2, ge=1, le=3)
+
+
+# ─────────────────────────── ANDREA (A.I.R.S.) ───────────────────────────
+
+
+class AndreaRunIn(BaseModel):
+    startup_name: str = Field(min_length=2, max_length=200)
+    input_text: str = Field(min_length=40, description="Pitch / descrizione / numeri della startup.")
+    max_iterations: int = Field(default=10, ge=1, le=10)
+
+
+class LawOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    code: str
+    module: str
+    title: str
+    body: str
+    source: str = ""
+
+
+class AndreaIterationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    index: int
+    lethal_flaw: str
+    stress_test: str
+    research_notes: str
+    redesign_prompt: str
+    version_md: str
+    key_numbers: dict
+    citations: list[str] = []
+    created_at: datetime
+
+    @field_validator("citations", mode="before")
+    @classmethod
+    def _cit(cls, v: object) -> list:
+        return [] if v is None else list(v)
+
+    @field_validator("key_numbers", mode="before")
+    @classmethod
+    def _kn(cls, v: object) -> dict:
+        return {} if v is None else dict(v)
+
+
+class AndreaRunOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    startup_name: str
+    input_text: str
+    status: str
+    current_iteration: int
+    max_iterations: int
+    systemic_map: str
+    lethal_flaws: list[dict] = []
+    final_report: str
+    narrative: str
+    assumptions: dict = {}
+    model: str | None = None
+    error: str | None = None
+    created_at: datetime
+    finished_at: datetime | None = None
+    iterations: list[AndreaIterationOut] = []
+
+    @field_validator("lethal_flaws", mode="before")
+    @classmethod
+    def _lf(cls, v: object) -> list:
+        return [] if v is None else list(v)
+
+    @field_validator("assumptions", mode="before")
+    @classmethod
+    def _as(cls, v: object) -> dict:
+        return {} if v is None else dict(v)

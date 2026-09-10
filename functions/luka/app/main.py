@@ -9,7 +9,7 @@ from fastapi.responses import FileResponse
 
 from .config import get_settings
 from .db import init_db
-from .routers import auth, connections, knowledge, tasks
+from .routers import andrea, auth, connections, knowledge, tasks
 from .seed import seed_demo
 
 _WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
@@ -52,6 +52,7 @@ app.include_router(auth.router)
 app.include_router(connections.router)
 app.include_router(knowledge.router)
 app.include_router(tasks.router)
+app.include_router(andrea.router)
 
 
 @app.get("/api/health")

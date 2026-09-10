@@ -9,6 +9,7 @@ import {
   Link2,
   Plus,
   Settings,
+  Skull,
   Sparkles,
 } from "lucide-react";
 import { useApp } from "../state";
@@ -16,6 +17,7 @@ import { AddConnectionModal } from "./AddConnectionModal";
 
 const NAV = [
   { to: "/", label: "Agente Luka", short: "Luka", icon: Bot, dot: true, end: true },
+  { to: "/andrea", label: "Agente Andrea", short: "Andrea", icon: Skull, dot: true },
   { to: "/dashboard", label: "Dashboard", short: "Home", icon: LayoutDashboard },
   { to: "/connections", label: "Profili Collegati", short: "Profili", icon: Link2 },
   { to: "/settings", label: "Settings", short: "Settings", icon: Settings },

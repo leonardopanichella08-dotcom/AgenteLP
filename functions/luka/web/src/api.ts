@@ -1,4 +1,12 @@
-import type { Connection, KbDocument, Meta, TaskDetail, TaskSummary } from "./types";
+import type {
+  AndreaRun,
+  Connection,
+  KbDocument,
+  Meta,
+  SimulatorLaw,
+  TaskDetail,
+  TaskSummary,
+} from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -79,4 +87,15 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ kind }),
     }),
+
+  // ── ANDREA ──
+  andreaLaws: () => req<SimulatorLaw[]>("/api/andrea/laws"),
+  andreaRuns: () => req<AndreaRun[]>("/api/andrea/runs"),
+  andreaRun: (id: string) => req<AndreaRun>(`/api/andrea/runs/${id}`),
+  andreaCreate: (body: { startup_name: string; input_text: string; max_iterations: number }) =>
+    req<AndreaRun>("/api/andrea/runs", { method: "POST", body: JSON.stringify(body) }),
+  andreaStep: (id: string) => req<AndreaRun>(`/api/andrea/runs/${id}/step`, { method: "POST" }),
+  andreaDelete: (id: string) => req<void>(`/api/andrea/runs/${id}`, { method: "DELETE" }),
+  andreaArtifactUrl: (id: string, kind: "report_pdf" | "narrative_pdf" | "financial_xlsx") =>
+    `${BASE}/api/andrea/runs/${id}/artifact/${kind}`,
 };

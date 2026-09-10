@@ -96,3 +96,44 @@ export interface Meta {
   linkedin_oauth: boolean;
   geo_options: { value: Geo; label: string }[];
 }
+
+/* ─────────────── ANDREA (A.I.R.S.) ─────────────── */
+
+export interface SimulatorLaw {
+  code: string;
+  module: string;
+  title: string;
+  body: string;
+  source: string;
+}
+
+export interface AndreaIteration {
+  index: number;
+  lethal_flaw: string;
+  stress_test: string;
+  research_notes: string;
+  redesign_prompt: string;
+  version_md: string;
+  key_numbers: Record<string, number>;
+  citations: string[];
+  created_at: string;
+}
+
+export interface AndreaRun {
+  id: string;
+  startup_name: string;
+  input_text: string;
+  status: "running" | "succeeded" | "failed";
+  current_iteration: number;
+  max_iterations: number;
+  systemic_map: string;
+  lethal_flaws: { flaw: string; death_mechanism: string; probability: string }[];
+  final_report: string;
+  narrative: string;
+  assumptions: Record<string, number>;
+  model: string | null;
+  error: string | null;
+  created_at: string;
+  finished_at: string | null;
+  iterations: AndreaIteration[];
+}
