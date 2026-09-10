@@ -153,7 +153,7 @@ cifratura token + macchina a stati OAuth.
 
 ## 6. Deploy su Vercel — GIÀ FATTO
 
-**Live:** https://agentelp-leonardo-8bdb.vercel.app · progetto Vercel `leonardo-8bdb/agentelp`
+**Live:** https://agentelp-app.vercel.app · progetto Vercel `leonardo-8bdb/agentelp`
 · DB Postgres su [Neon](https://neon.tech) (free) · Root Directory `functions/luka`.
 
 **Come funziona il deploy** (niente `outputDirectory`, niente rewrite):
