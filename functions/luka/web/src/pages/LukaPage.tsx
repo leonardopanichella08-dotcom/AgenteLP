@@ -84,6 +84,9 @@ export default function LukaPage() {
           <KnowledgeBaseCard connection={active} onChanged={refreshConnections} />
           <ViralFilters
             key={active.id}
+            initialNiche={active.brand_profile?.niche || ""}
+            initialPrimary={(active.brand_profile?.keywords_primary || []).join(", ")}
+            initialSecondary={(active.brand_profile?.keywords_secondary || []).join(", ")}
             geoOptions={meta?.geo_options ?? DEFAULT_GEO}
             provider={meta?.discovery_provider ?? "free"}
             running={discovery.isPending}
@@ -217,6 +220,9 @@ function KbItem({ label, value }: { label: string; value: string }) {
 
 /* ---------- Filtri ricerca ---------- */
 function ViralFilters({
+  initialNiche,
+  initialPrimary,
+  initialSecondary,
   geoOptions,
   provider,
   running,
@@ -224,6 +230,9 @@ function ViralFilters({
   onRun,
   onAnalyze,
 }: {
+  initialNiche: string;
+  initialPrimary: string;
+  initialSecondary: string;
   geoOptions: { value: Geo; label: string }[];
   provider: string;
   running: boolean;
@@ -231,10 +240,11 @@ function ViralFilters({
   onRun: (f: { niche: string; primary: string[]; secondary: string[]; geo: Geo }) => void;
   onAnalyze: (niche: string, text: string, author: string) => void;
 }) {
-  const [niche, setNiche] = useState("AI B2B / Sales Intelligence");
-  const [primary, setPrimary] = useState("sales, automation, icp, outbound");
-  const [secondary, setSecondary] = useState("revops, pipeline, forecast");
+  const [niche, setNiche] = useState(initialNiche || "AI B2B / Sales Intelligence");
+  const [primary, setPrimary] = useState(initialPrimary || "sales, automation, icp, outbound");
+  const [secondary, setSecondary] = useState(initialSecondary || "revops, pipeline, forecast");
   const [geo, setGeo] = useState<Geo>("italy");
+  const prefilled = Boolean(initialNiche || initialPrimary);
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [pasteAuthor, setPasteAuthor] = useState("");
@@ -244,6 +254,11 @@ function ViralFilters({
       title="Ricerca post virali"
       right={<span className="text-[11px] text-ink-faint">fonte: {PROVIDER_LABEL[provider] ?? provider}</span>}
     >
+      {prefilled && (
+        <p className="-mt-2 mb-3 text-[11px] text-ink-faint">
+          Nicchia e keyword compilate dall'analisi del profilo. Modificale se vuoi.
+        </p>
+      )}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_190px_auto] lg:items-end">
         <Field label="Nicchia">
           <input value={niche} onChange={(e) => setNiche(e.target.value)} className="input" placeholder="es. AI B2B" />
@@ -323,15 +338,19 @@ function ResultsFeed({
   onRegen: (postId: string, kind: "comment" | "repost_with_comment") => void;
 }) {
   const s = task.result_summary ?? {};
+  const allLinks = task.posts.map((p) => p.linkedin_post_url).filter(Boolean).join("\n");
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-semibold">
           Post virali scoperti <span className="text-ink-faint">· {task.posts.length}/10</span>
         </h2>
-        <p className="text-[11px] text-ink-faint">
-          fonte: {String(s.provider ?? "—")} · {String(s.comments_generated ?? 0)} risposte generate
-        </p>
+        <div className="flex items-center gap-2">
+          {allLinks && <CopyButton text={allLinks} label="Copia tutti i link" />}
+          <p className="text-[11px] text-ink-faint">
+            fonte: {String(s.provider ?? "—")} · {String(s.comments_generated ?? 0)} risposte
+          </p>
+        </div>
       </div>
       {task.posts.map((p) => (
         <ViralPostCard
@@ -401,16 +420,18 @@ function ViralPostCard({
             <Metric label="Commenti" value={fmt(post.comments)} />
             <Metric label="Views" value={post.views ? fmt(post.views) : "n/d"} />
           </div>
-          {post.author_profile_url && (
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-surface-muted px-2.5 py-1.5">
             <a
               href={post.linkedin_post_url}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-1 text-[11px] text-ink-faint hover:text-brand"
+              className="min-w-0 flex-1 truncate text-[11px] text-brand hover:underline"
+              title={post.linkedin_post_url}
             >
-              <ExternalLink className="h-3 w-3" /> vedi il post originale
+              {post.linkedin_post_url.replace(/^https?:\/\/(www\.)?/, "")}
             </a>
-          )}
+            <CopyButton text={post.linkedin_post_url} label="Copia link" />
+          </div>
         </div>
 
         <div className="bg-surface-muted p-5">

@@ -19,6 +19,11 @@ class ConnectionCreate(BaseModel):
     )
 
 
+class ConnectionFromUsernameIn(BaseModel):
+    username: str = Field(description="Username LinkedIn o URL del profilo (linkedin.com/in/...).")
+    account_type: str = Field(default="personal", pattern="^(personal|company)$")
+
+
 class BrandProfileOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -27,6 +32,9 @@ class BrandProfileOut(BaseModel):
     icp: str
     market_context: str
     tone_of_voice: str
+    niche: str = ""
+    keywords_primary: list[str] = []
+    keywords_secondary: list[str] = []
     banned_phrases: list[str]
     goal: str
     generated_by_model: str | None = None

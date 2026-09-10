@@ -27,6 +27,11 @@ export const api = {
     vanity_url?: string;
     raw_about?: string;
   }) => req<Connection>("/api/connections", { method: "POST", body: JSON.stringify(body) }),
+  createFromUsername: (body: { username: string; account_type: string }) =>
+    req<Connection>("/api/connections/from-username", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   reanalyze: (id: string) =>
     req<Connection>(`/api/connections/${id}/reanalyze`, { method: "POST" }),
 

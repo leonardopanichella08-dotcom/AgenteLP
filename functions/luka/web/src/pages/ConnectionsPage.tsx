@@ -120,6 +120,14 @@ function ConnectionCard({
         <Field label="Mission & Value Prop" value={joinTwo(bp?.mission, bp?.value_proposition)} />
         <Field label="ICP & Market Context" value={joinTwo(bp?.icp, bp?.market_context)} />
       </div>
+      {(bp?.niche || (bp?.keywords_primary?.length ?? 0) > 0) && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {bp?.niche && <Pill tone="brand">{bp.niche}</Pill>}
+          {[...(bp?.keywords_primary ?? []), ...(bp?.keywords_secondary ?? [])].slice(0, 12).map((k) => (
+            <Pill key={k}>{k}</Pill>
+          ))}
+        </div>
+      )}
 
       <div className="mt-4 border-t border-line pt-3">
         <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">

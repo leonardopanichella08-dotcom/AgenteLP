@@ -114,6 +114,10 @@ class BrandProfile(Base):
     tone_of_voice: Mapped[str] = mapped_column(
         Text, default="autorevole, diretto, concreto, zero buzzword"
     )
+    # Nicchia + keyword derivate dall'analisi del profilo (pre-compilano la ricerca)
+    niche: Mapped[str] = mapped_column(Text, default="")
+    keywords_primary: Mapped[list] = mapped_column(JSON, default=list)
+    keywords_secondary: Mapped[list] = mapped_column(JSON, default=list)
     banned_phrases: Mapped[list] = mapped_column(JSON, default=list)
     goal: Mapped[str] = mapped_column(
         Text, default="Generare conversazione e traffico qualificato verso il profilo"

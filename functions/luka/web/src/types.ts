@@ -7,6 +7,9 @@ export interface BrandProfile {
   icp: string;
   market_context: string;
   tone_of_voice: string;
+  niche: string;
+  keywords_primary: string[];
+  keywords_secondary: string[];
   banned_phrases: string[];
   goal: string;
   generated_by_model: string | null;

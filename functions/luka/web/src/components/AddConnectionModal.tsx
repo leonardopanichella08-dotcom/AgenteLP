@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import clsx from "clsx";
-import { Link2, Loader2, X } from "lucide-react";
+import { AtSign, ChevronDown, Link2, Loader2, Sparkles, X } from "lucide-react";
 import { api } from "../api";
 import { useApp } from "../state";
 import { Field } from "../ui";
@@ -11,12 +11,24 @@ export function AddConnectionModal() {
   const oauth = meta?.linkedin_oauth ?? false;
 
   const [accountType, setAccountType] = useState<"personal" | "company">("personal");
+  const [username, setUsername] = useState("");
+  const [manualOpen, setManualOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [headline, setHeadline] = useState("");
   const [industry, setIndustry] = useState("");
   const [rawAbout, setRawAbout] = useState("");
 
-  const create = useMutation({
+  const onDone = (c: { id: string }) => {
+    refreshConnections();
+    setActiveId(c.id);
+    closeAdd();
+  };
+
+  const fromUsername = useMutation({
+    mutationFn: () => api.createFromUsername({ username: username.trim(), account_type: accountType }),
+    onSuccess: onDone,
+  });
+  const manual = useMutation({
     mutationFn: () =>
       api.createConnection({
         account_type: accountType,
@@ -25,11 +37,7 @@ export function AddConnectionModal() {
         industry,
         raw_about: rawAbout,
       }),
-    onSuccess: (c) => {
-      refreshConnections();
-      setActiveId(c.id);
-      closeAdd();
-    },
+    onSuccess: onDone,
   });
 
   if (!addOpen) return null;
@@ -43,11 +51,6 @@ export function AddConnectionModal() {
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="mt-1 text-[11px] text-ink-soft">
-          {oauth
-            ? "Collega con LinkedIn, oppure incolla i dati manualmente."
-            : "Incolla i dati dal profilo. L'OAuth LinkedIn si attiva quando imposti CLIENT_ID/SECRET."}
-        </p>
 
         <div className="mt-4 space-y-3">
           <div className="flex gap-2">
@@ -68,56 +71,78 @@ export function AddConnectionModal() {
           </div>
 
           {oauth && (
-            <>
-              <a
-                href={`/api/auth/linkedin/start?account_type=${accountType}`}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-hover"
+            <a
+              href={`/api/auth/linkedin/start?account_type=${accountType}`}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-hover"
+            >
+              <Link2 className="h-4 w-4" /> Continua con LinkedIn
+            </a>
+          )}
+
+          {/* metodo consigliato: username -> scrape + analisi automatica */}
+          <Field
+            label="Username LinkedIn"
+            hint="La parte finale di linkedin.com/in/… — l'app analizza il profilo e compila tutto."
+          >
+            <div className="relative">
+              <AtSign className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+              <input
+                className="input pl-8"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="mario-rossi  oppure  https://linkedin.com/in/mario-rossi"
+              />
+            </div>
+          </Field>
+          <button
+            onClick={() => fromUsername.mutate()}
+            disabled={fromUsername.isPending || username.trim().length < 2}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-hover disabled:opacity-50"
+          >
+            {fromUsername.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {fromUsername.isPending ? "Analizzo il profilo…" : "Analizza profilo e collega"}
+          </button>
+          {fromUsername.isError && (
+            <p className="text-[12px] text-warn">{(fromUsername.error as Error).message}</p>
+          )}
+
+          {/* fallback manuale */}
+          <button
+            onClick={() => setManualOpen((v) => !v)}
+            className="flex items-center gap-1.5 pt-1 text-[12px] font-medium text-ink-soft hover:text-ink"
+          >
+            <ChevronDown className={clsx("h-3.5 w-3.5 transition", manualOpen && "rotate-180")} />
+            Oppure inserisci i dati a mano
+          </button>
+          {manualOpen && (
+            <div className="space-y-3 border-t border-line pt-3">
+              <Field label="Nome visualizzato">
+                <input className="input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+              </Field>
+              <Field label="Headline">
+                <input className="input" value={headline} onChange={(e) => setHeadline(e.target.value)} />
+              </Field>
+              <Field label="Settore / Industry">
+                <input className="input" value={industry} onChange={(e) => setIndustry(e.target.value)} />
+              </Field>
+              <Field label="Bio / esperienze / descrizione azienda">
+                <textarea
+                  className="input min-h-[90px] resize-y"
+                  value={rawAbout}
+                  onChange={(e) => setRawAbout(e.target.value)}
+                />
+              </Field>
+              {manual.isError && <p className="text-[12px] text-warn">{(manual.error as Error).message}</p>}
+              <button
+                onClick={() => manual.mutate()}
+                disabled={!displayName || manual.isPending}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-line px-4 py-1.5 text-[13px] font-semibold hover:border-line-strong disabled:opacity-50"
               >
-                <Link2 className="h-4 w-4" /> Continua con LinkedIn
-              </a>
-              <div className="flex items-center gap-3 py-1 text-[11px] text-ink-faint">
-                <span className="h-px flex-1 bg-line" /> oppure manualmente{" "}
-                <span className="h-px flex-1 bg-line" />
-              </div>
-            </>
+                {manual.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Collega e analizza
+              </button>
+            </div>
           )}
-
-          <Field label="Nome visualizzato">
-            <input className="input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-          </Field>
-          <Field label="Headline">
-            <input className="input" value={headline} onChange={(e) => setHeadline(e.target.value)} />
-          </Field>
-          <Field label="Settore / Industry">
-            <input className="input" value={industry} onChange={(e) => setIndustry(e.target.value)} />
-          </Field>
-          <Field label="Bio / esperienze / descrizione azienda">
-            <textarea
-              className="input min-h-[90px] resize-y"
-              value={rawAbout}
-              onChange={(e) => setRawAbout(e.target.value)}
-            />
-          </Field>
-          {create.isError && (
-            <p className="text-[12px] text-warn">{(create.error as Error).message}</p>
-          )}
-        </div>
-
-        <div className="mt-4 flex justify-end gap-2">
-          <button
-            onClick={closeAdd}
-            className="rounded-lg border border-line px-3 py-1.5 text-[13px] font-medium hover:border-line-strong"
-          >
-            Annulla
-          </button>
-          <button
-            onClick={() => create.mutate()}
-            disabled={!displayName || create.isPending}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-1.5 text-[13px] font-semibold text-white hover:bg-brand-hover disabled:opacity-50"
-          >
-            {create.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            Collega e analizza
-          </button>
         </div>
       </div>
     </div>

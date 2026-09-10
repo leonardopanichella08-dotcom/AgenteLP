@@ -62,6 +62,9 @@ def seed_demo() -> None:
                     icp="VP Sales e RevOps in scale-up SaaS europee (50-500 dipendenti) con pipeline multi-prodotto.",
                     market_context="Mercato sales-tech saturo di tool di automazione che aumentano il volume ma non la qualita'; poco posizionamento chiaro.",
                     tone_of_voice="autorevole, diretto, concreto, senza buzzword",
+                    niche="AI per vendite B2B / Sales Intelligence",
+                    keywords_primary=["sales automation", "account qualification", "outbound", "ICP", "RevOps"],
+                    keywords_secondary=["pipeline", "sales forecast", "buyer intent", "GTM", "cold outreach"],
                     generated_by_model="seed",
                 ),
                 BrandProfile(
@@ -71,6 +74,9 @@ def seed_demo() -> None:
                     icp="Team GTM di scale-up SaaS 50-500 dipendenti in Europa.",
                     market_context="Sales intelligence B2B: molta offerta, differenziazione debole, buyer scettici verso l'AI generica.",
                     tone_of_voice="competente, sobrio, orientato ai risultati",
+                    niche="Sales intelligence B2B",
+                    keywords_primary=["sales intelligence", "buyer intent", "account scoring", "firmographics", "GTM"],
+                    keywords_secondary=["demand gen", "pipeline", "lead qualification", "revenue operations"],
                     generated_by_model="seed",
                 ),
                 SearchConfig(
