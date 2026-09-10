@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from typing import Any
 
-import httpx
-
 from ..config import get_settings
 
 _FIELDS = ("mission", "value_proposition", "icp", "market_context", "tone_of_voice")
@@ -83,6 +81,8 @@ def _synthesize_with_gemini(
         },
         "required": list(_FIELDS),
     }
+    from ..gemini_client import extract_text, generate_content
+
     body = {
         "contents": [
             {
@@ -94,22 +94,14 @@ def _synthesize_with_gemini(
         ],
         "generationConfig": {
             "temperature": 0.4,
-            "maxOutputTokens": 900,
+            "maxOutputTokens": 2000,
             "responseMimeType": "application/json",
             "responseSchema": schema,
         },
     }
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{s.gemini_model}:generateContent"
-    )
-    with httpx.Client(timeout=45) as c:
-        r = c.post(url, params={"key": s.gemini_api_key}, json=body)
-        r.raise_for_status()
-        data = r.json()
-    text = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
-    out = json.loads(text)
-    out["generated_by_model"] = s.gemini_model
+    data = generate_content(api_key=s.gemini_api_key, model=s.gemini_model, body=body)
+    out = json.loads(extract_text(data))
+    out["generated_by_model"] = data.get("modelVersion") or s.gemini_model
     return out
 
 

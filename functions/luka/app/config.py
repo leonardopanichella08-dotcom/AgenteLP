@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     llm_provider: str = "auto"  # "auto" | "gemini" | "anthropic" | "demo"
     # Gemini: chiave gratuita da https://aistudio.google.com (NESSUNA carta).
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-3.6-flash"  # fallback automatico se non disponibile
     # Anthropic: qualità migliore, ma a consumo.
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-sonnet-5"

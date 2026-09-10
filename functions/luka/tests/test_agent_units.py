@@ -95,17 +95,20 @@ def test_system_blocks_use_prompt_caching():
     assert "snippet uno" in blocks[1]["text"]
 
 
-def test_llm_provider_selection(monkeypatch):
+def test_llm_provider_selection():
     from app.config import Settings
 
-    assert Settings(llm_provider="auto").active_llm == "demo"
-    assert Settings(llm_provider="auto", gemini_api_key="g").active_llm == "gemini"
-    assert Settings(llm_provider="auto", anthropic_api_key="a").active_llm == "anthropic"
+    def S(**kw):  # ignora .env locale
+        return Settings(_env_file=None, **kw)
+
+    assert S(llm_provider="auto").active_llm == "demo"
+    assert S(llm_provider="auto", gemini_api_key="g").active_llm == "gemini"
+    assert S(llm_provider="auto", anthropic_api_key="a").active_llm == "anthropic"
     # gemini vince su anthropic in auto (costo zero prima)
-    assert Settings(llm_provider="auto", gemini_api_key="g", anthropic_api_key="a").active_llm == "gemini"
+    assert S(llm_provider="auto", gemini_api_key="g", anthropic_api_key="a").active_llm == "gemini"
     # scelta esplicita rispettata, con fallback a demo se manca la chiave
-    assert Settings(llm_provider="anthropic", gemini_api_key="g").active_llm == "demo"
-    assert Settings(llm_provider="demo", gemini_api_key="g").active_llm == "demo"
+    assert S(llm_provider="anthropic", gemini_api_key="g").active_llm == "demo"
+    assert S(llm_provider="demo", gemini_api_key="g").active_llm == "demo"
 
 
 def test_gemini_schema_adapter():

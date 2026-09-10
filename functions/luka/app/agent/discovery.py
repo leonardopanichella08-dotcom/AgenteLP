@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -159,13 +160,18 @@ class ApifyDiscoveryProvider(DiscoveryProvider):
         self.actor_path = actor.replace("/", "~")
 
     def discover(self, q: DiscoveryQuery) -> list[RawPost]:
-        keyword = " ".join([q.niche, *q.keywords_primary[:3]]).strip()
+        words: list[str] = []
+        for term in [q.niche, *q.keywords_primary]:
+            for w in _TOKEN_RE.findall((term or "").lower()):
+                if w not in _TERM_STOP and w not in words:
+                    words.append(w)
+        keyword = " ".join(words[:5]) or (q.niche or "b2b")
+        want = min(max(q.limit * 3, 10), 50)
         payload = {
             "keyword": keyword,
             "sort_type": "relevance",
-            "date_filter": self._DATE_FILTER.get(q.geo, ""),
-            "limit": min(max(q.limit * 3, 10), 50),
-            "total_posts": min(max(q.limit * 3, 10), 50),
+            "limit": want,
+            "total_posts": want,
         }
         url = (
             f"https://api.apify.com/v2/acts/{self.actor_path}"
@@ -179,62 +185,64 @@ class ApifyDiscoveryProvider(DiscoveryProvider):
         geo_terms = _GEO_TEXT_HINTS.get(q.geo, set())
         out: list[RawPost] = []
         for it in items if isinstance(items, list) else []:
-            text = _dig(it, "text", "postText", "content", "post_text", "commentary") or ""
-            link = _dig(it, "url", "postUrl", "post_url", "link", "permalink") or ""
-            if not text.strip() or not link:
+            if not isinstance(it, dict):
                 continue
-            reactions = _num(it, "numLikes", "likesCount", "reactionsCount", "reactions",
-                              "likes", "num_reactions", "totalReactionCount")
-            comments = _num(it, "numComments", "commentsCount", "comments", "num_comments")
-            reposts = _num(it, "numShares", "sharesCount", "repostsCount", "reposts",
-                           "shares", "num_reposts")
-            views = _num(it, "numViews", "viewsCount", "views", "impressions") or None
-            posted_at = _parse_dt(
-                _dig(it, "postedAtISO", "publishedAt", "post_date", "date",
-                     "posted_at", "time")
-            )
-            author = (
-                _dig(it, "authorName", "author_name", "authorFullName")
-                or _dig(it.get("author") or {}, "name", "fullName")
-                or _dig(it.get("actor") or {}, "name")
-                or "Autore LinkedIn"
-            )
-            headline = (
-                _dig(it, "authorHeadline", "author_headline", "authorTitle",
-                     "authorSubtitle")
-                or _dig(it.get("author") or {}, "headline", "occupation")
-            )
-            profile_url = (
-                _dig(it, "authorProfileUrl", "author_url", "authorUrl", "profileUrl")
-                or _dig(it.get("author") or {}, "url", "profileUrl")
-            )
+            author = it.get("author") if isinstance(it.get("author"), dict) else {}
+            stats = it.get("stats") if isinstance(it.get("stats"), dict) else {}
 
-            # filtro geografico best-effort sul testo/headline
+            text = (_dig(it, "text", "postText", "content", "commentary") or "").strip()
+            link = _dig(it, "post_url", "url", "postUrl", "link", "permalink") or ""
+            if not text or not link:
+                continue
+
+            reactions = _num(stats, "total_reactions", "reactions_count", "likes") or _num(
+                it, "numLikes", "likesCount", "totalReactionCount"
+            )
+            comments = _num(stats, "comments", "comments_count") or _num(
+                it, "numComments", "commentsCount"
+            )
+            reposts = _num(stats, "shares", "reposts", "shares_count") or _num(
+                it, "numShares", "sharesCount"
+            )
+            views = _num(stats, "views", "impressions") or _num(it, "numViews", "views")
+            if not views:
+                # l'actor non espone le views: stima da engagement per il ranking
+                views = (reactions + 4 * comments + 8 * reposts) * 25 or None
+
+            posted_raw = it.get("posted_at")
+            if isinstance(posted_raw, dict):
+                posted_at = _parse_dt(posted_raw.get("date")) or _parse_ts(
+                    posted_raw.get("timestamp")
+                )
+            else:
+                posted_at = _parse_dt(
+                    _dig(it, "postedAtISO", "publishedAt", "date", "time")
+                )
+
+            name = _dig(author, "name", "full_name", "fullName") or _dig(
+                it, "authorName", "author_name"
+            ) or "Autore LinkedIn"
+            headline = _dig(author, "headline", "occupation", "subtitle")
+            profile_url = _dig(author, "profile_url", "url", "profileUrl")
+
+            geo_penalty = 1.0
             if geo_terms:
                 hay = f"{text} {headline or ''} {profile_url or ''}".lower()
                 if not any(t in hay for t in geo_terms):
-                    # non scartare del tutto: penalizza in ranking
-                    geo_penalty = 0.6
-                else:
-                    geo_penalty = 1.0
-            else:
-                geo_penalty = 1.0
+                    geo_penalty = 0.7
 
             score = engagement_score(
-                views=views,
-                reactions=reactions,
-                comments=comments,
-                reposts=reposts,
-                posted_at=posted_at,
+                views=views, reactions=reactions, comments=comments,
+                reposts=reposts, posted_at=posted_at,
             )
             out.append(
                 RawPost(
-                    author_name=author,
+                    author_name=name,
                     author_headline=headline,
                     author_profile_url=profile_url,
                     niche=q.niche,
                     url=link,
-                    text=text.strip(),
+                    text=text,
                     reactions=reactions,
                     comments=comments,
                     reposts=reposts,
@@ -284,6 +292,19 @@ def _parse_dt(value: str | None) -> datetime | None:
     try:
         return datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
+        return None
+
+
+def _parse_ts(value: Any) -> datetime | None:
+    try:
+        ts = float(value)
+    except (TypeError, ValueError):
+        return None
+    if ts > 1e12:  # millisecondi
+        ts /= 1000.0
+    try:
+        return datetime.fromtimestamp(ts, tz=timezone.utc)
+    except (OverflowError, OSError, ValueError):
         return None
 
 

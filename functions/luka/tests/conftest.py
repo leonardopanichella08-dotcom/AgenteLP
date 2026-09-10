@@ -11,9 +11,11 @@ from cryptography.fernet import Fernet
 _TMP = tempfile.mkdtemp(prefix="luka-tests-")
 os.environ["DATABASE_URL"] = f"sqlite:///{Path(_TMP) / 'test.db'}"
 os.environ["APP_ENCRYPTION_KEY"] = Fernet.generate_key().decode()
+# Isola i test da .env: niente rete, generazione deterministica.
 os.environ["DISCOVERY_PROVIDER"] = "sample"
-os.environ.pop("ANTHROPIC_API_KEY", None)
-os.environ.pop("APIFY_TOKEN", None)
+os.environ["LLM_PROVIDER"] = "demo"
+for _k in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "APIFY_TOKEN"):
+    os.environ.pop(_k, None)
 
 
 @pytest.fixture(scope="session")

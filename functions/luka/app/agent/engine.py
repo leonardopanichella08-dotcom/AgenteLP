@@ -4,8 +4,6 @@ import json
 import re
 from typing import Any
 
-import httpx
-
 from ..config import get_settings
 from .prompt import (
     PROMPT_VERSION,
@@ -66,36 +64,29 @@ def _generate_with_gemini(
     rag_snippets: list[str] | None,
     n: int,
 ) -> dict[str, Any]:
+    from ..gemini_client import extract_text, generate_content, usage
+
     s = get_settings()
     system_text, user_text = _gemini_prompt(ctx, post, rag_snippets, n)
-    url = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{s.gemini_model}:generateContent"
-    )
     body = {
         "systemInstruction": {"parts": [{"text": system_text}]},
         "contents": [{"role": "user", "parts": [{"text": user_text}]}],
         "generationConfig": {
             "temperature": 0.9,
-            "maxOutputTokens": MAX_TOKENS,
+            "maxOutputTokens": MAX_TOKENS * 2,  # margine per i "thinking tokens" 3.x
             "responseMimeType": "application/json",
             "responseSchema": _gemini_schema(_ENGAGEMENT_SCHEMA),
         },
     }
-    with httpx.Client(timeout=60) as c:
-        r = c.post(url, params={"key": s.gemini_api_key}, json=body)
-        r.raise_for_status()
-        data = r.json()
-
-    parts = data["candidates"][0]["content"]["parts"]
-    text = "".join(p.get("text", "") for p in parts)
-    output = json.loads(text)
-    usage = data.get("usageMetadata", {})
+    data = generate_content(api_key=s.gemini_api_key, model=s.gemini_model, body=body)
+    text = extract_text(data)
+    output = json.loads(text) if text.strip() else {"skip": True, "comments": []}
+    tin, tout = usage(data)
     return {
         "prompt_version": PROMPT_VERSION,
-        "model": s.gemini_model,
-        "tokens_input": usage.get("promptTokenCount"),
-        "tokens_output": usage.get("candidatesTokenCount"),
+        "model": data.get("modelVersion") or s.gemini_model,
+        "tokens_input": tin,
+        "tokens_output": tout,
         "output": _coerce_output(output),
     }
 
