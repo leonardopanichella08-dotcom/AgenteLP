@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.db
+.env
+
+# Node
+web/node_modules/
+web/dist/
+web/.env
+web/.env.local
+*.tsbuildinfo
+
+# Editor / OS
+.DS_Store
+*.log

@@ -1,0 +1,28 @@
+# ── Python ──────────────────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+.env
+.env.local
+
+# ── Node ────────────────────────────────────────────
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# ── Editor / OS ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+
+# ── Vercel ──────────────────────────────────────────
+.vercel
+
+# pytest
+.pytest_cache/

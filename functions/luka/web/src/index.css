@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: theme("fontFamily.sans");
+  -webkit-font-smoothing: antialiased;
+  color: theme("colors.ink.DEFAULT");
+  background: theme("colors.surface.muted");
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-[13px] text-ink outline-none transition
+      placeholder:text-ink-faint focus:border-brand focus:ring-2 focus:ring-brand/15;
+  }
+}
