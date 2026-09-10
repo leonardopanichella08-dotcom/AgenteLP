@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd web && npm ci && npm run build",
-  "outputDirectory": "web/dist",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
+  "functions": {
+    "app/main.py": {
+      "excludeFiles": "{tests/**,web/node_modules/**,web/src/**,.venv/**,**/__pycache__/**,**/*.test.py,**/test_*.py}"
+    }
+  }
 }
