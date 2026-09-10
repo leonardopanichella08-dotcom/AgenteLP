@@ -10,10 +10,10 @@ impatto**, esecuzione assistita via deep-link.
 > [`docs/architecture.md`](../../docs/architecture.md). Nessuna logica
 > condivisa con **ANDREA**.
 
-> **Gira 100% gratis, senza account.** Discovery da Hacker News + Reddit,
-> generazione in *demo mode* (template). Per risposte di qualità a costo zero:
-> chiave **Gemini** gratuita (nessuna carta). Chiave **Anthropic** opzionale
-> per la qualità massima, a consumo.
+> **In produzione ora:** scraping LinkedIn reale via **Apify** (piano trial),
+> generazione con **Gemini** (chiave gratuita). Fallback automatici: se Apify
+> non rende → Hacker News; senza chiave LLM → template. `LLM_PROVIDER=auto`
+> sceglie Gemini → Anthropic → demo.
 
 ---
 
@@ -153,7 +153,7 @@ cifratura token + macchina a stati OAuth.
 
 ## 6. Deploy su Vercel — GIÀ FATTO
 
-**Live:** https://luka-kappa-mocha.vercel.app · progetto Vercel `leonardo-8bdb/luka`
+**Live:** https://agentelp-leonardo-8bdb.vercel.app · progetto Vercel `leonardo-8bdb/agentelp`
 · DB Postgres su [Neon](https://neon.tech) (free) · Root Directory `functions/luka`.
 
 **Come funziona il deploy** (niente `outputDirectory`, niente rewrite):
@@ -163,8 +163,9 @@ lato client → `index.html`, gli asset dai file reali, `/api/*` resta sui route
 
 **Redeploy:**
 ```bash
-cd functions/luka && vercel deploy --prod      # manuale
-# oppure semplicemente:  git push               # auto-deploy (repo collegato)
+git push                                        # auto-deploy (consigliato)
+# manuale: SOLO dalla radice del repo (non da functions/luka):
+cd C:\Users\leona\AgenteLP && vercel deploy --prod
 ```
 
 **Env vars di produzione già impostate:** `DATABASE_URL` (Neon pooled),
