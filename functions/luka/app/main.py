@@ -61,7 +61,7 @@ def meta():
     return {
         "generation_mode": "llm" if s.has_llm else "demo",
         "model": s.anthropic_model if s.has_llm else None,
-        "discovery_provider": "apify" if s.has_apify else "sample",
+        "discovery_provider": s.discovery_label,
         "linkedin_oauth": s.has_linkedin_oauth,
         "geo_options": [
             {"value": "world", "label": "Mondo"},

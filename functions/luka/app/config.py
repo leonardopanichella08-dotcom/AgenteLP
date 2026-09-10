@@ -15,7 +15,10 @@ class Settings(BaseSettings):
     anthropic_model: str = "claude-sonnet-5"
 
     # ── Discovery ──────────────────────────────────────────
-    discovery_provider: str = "sample"  # "sample" | "apify"
+    # "free"   : Hacker News + Reddit (segnale di nicchia, zero chiavi) — DEFAULT
+    # "sample" : dataset locale incluso (offline, deterministico)
+    # "apify"  : post LinkedIn reali via Apify actor (richiede APIFY_TOKEN, a pagamento)
+    discovery_provider: str = "free"
     apify_token: str | None = None
     apify_actor: str = "apimaestro/linkedin-posts-search-scraper-no-cookies"
 
@@ -40,6 +43,12 @@ class Settings(BaseSettings):
     @property
     def has_apify(self) -> bool:
         return self.discovery_provider == "apify" and bool(self.apify_token)
+
+    @property
+    def discovery_label(self) -> str:
+        if self.has_apify:
+            return "apify"
+        return "sample" if self.discovery_provider == "sample" else "free"
 
     @property
     def has_linkedin_oauth(self) -> bool:

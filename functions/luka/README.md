@@ -49,20 +49,26 @@ Scorciatoia Windows: `./dev.ps1` avvia tutto.
 | Profili collegati | 2 profili demo (personale + Pagina) già analizzati |
 | Onboarding / Knowledge Base | sintesi euristica di Mission, Value Prop, ICP, Market Context |
 | Upload documenti (PDF/DOCX/TXT) | estrazione testo + indicizzazione lessicale (RAG senza embedding) |
-| Discovery post virali | dataset locale `app/data/seed_posts.json`, filtrato per nicchia/keyword/area |
-| Ranking | engagement rate ponderato × recency × reach |
+| **Discovery** (`DISCOVERY_PROVIDER=free`) | **Hacker News + Reddit**: contenuti che performano ORA sulla nicchia. 100% gratis, nessuna chiave. Ricade sul dataset locale se offline. |
+| Incolla-post manuale | `POST /api/tasks/analyze` o pannello "Oppure incolla un post": Luka lavora su post LinkedIn reali incollati a mano — sempre accurato, sempre gratis |
+| Ranking | engagement rate ponderato × recency × reach (half-life adattiva per fonte) |
 | Generazione commenti/repost | *demo mode*: template coerenti con post + contesto |
 | Dashboard | lista post + risposte + Copia + deep-link "Apri su LinkedIn" |
 
+> **Nota:** la discovery `free` non restituisce *post LinkedIn* ma il **segnale
+> di trend** della nicchia (di cosa si parla, con quale engagement) su HN/Reddit,
+> così Luka può cavalcarlo. Per i post LinkedIn letterali: `analyze` (incolla) —
+> gratis e preciso — oppure `DISCOVERY_PROVIDER=apify` (a pagamento).
+
 ## 3. Passare alla modalità reale (opzionale, a consumo)
 
-Copia `.env.example` in `.env` e compila:
+Copia `.env.example` in `.env` e compila solo ciò che ti serve:
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-...      # -> generazione e onboarding con Claude
+ANTHROPIC_API_KEY=sk-ant-...      # -> generazione + onboarding con Claude (qualità)
 ANTHROPIC_MODEL=claude-sonnet-5
 
-DISCOVERY_PROVIDER=apify          # -> scraping reale invece del dataset locale
+DISCOVERY_PROVIDER=apify          # -> post LinkedIn reali (Apify, a pagamento)
 APIFY_TOKEN=apify_api_...
 ```
 
@@ -116,6 +122,7 @@ functions/luka/
 | `POST` | `/api/connections/{id}/reanalyze` | rigenera la knowledge base |
 | `POST` | `/api/connections/{id}/documents` | upload documento (multipart) |
 | `POST` | `/api/tasks/discovery` | discovery + ranking + generazione, in un colpo |
+| `POST` | `/api/tasks/analyze` | genera su post LinkedIn **incollati a mano** (gratis, preciso) |
 | `GET` | `/api/tasks/{id}` | dettaglio task con post e risposte |
 | `POST` | `/api/tasks/posts/{id}/regenerate` | rigenera le risposte di un post |
 
@@ -188,7 +195,8 @@ manuale resta come fallback.
 L'API ufficiale **non** consente ricerca post per keyword, lettura
 dell'engagement altrui, né commenti automatici su scala. Quindi:
 
-- discovery via **provider terzi** (Apify) o dataset locale;
+- discovery via **segnale di nicchia gratuito** (HN/Reddit), incolla-post
+  manuale, o **provider terzi** (Apify) per i post LinkedIn letterali;
 - **nessun commento pubblicato via API**: Luka genera → *Copia* → deep-link →
   pubblichi tu. È il flusso conforme.
 - via API solo **contenuti originali** sul profilo/Pagina dell'utente.

@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from app.agent.discovery import DiscoveryQuery, SampleDiscoveryProvider
+from app.agent.discovery import (
+    DiscoveryQuery,
+    FreeDiscoveryProvider,
+    SampleDiscoveryProvider,
+)
 from app.agent.engine import _demo_generate
 from app.agent.prompt import BrandContext, DiscoveredPost, build_system_blocks
 from app.agent.ranking import engagement_score
@@ -52,6 +56,19 @@ def test_sample_discovery_geo_widening():
     ww = p.discover(DiscoveryQuery(**base, geo="world", limit=20))
     assert 0 < len(it) <= len(eu) <= len(ww)
     assert all(a.score >= b.score for a, b in zip(ww, ww[1:]))
+
+
+def test_free_provider_always_returns_usable_posts():
+    # online: HN/Reddit; offline: fallback al dataset locale. In ogni caso
+    # deve restituire post con url + testo + score.
+    posts = FreeDiscoveryProvider().discover(
+        DiscoveryQuery(niche="AI B2B sales", keywords_primary=["automation"], geo="world", limit=6)
+    )
+    assert posts, "il provider free deve sempre restituire qualcosa (fallback incluso)"
+    assert len(posts) <= 6
+    for p in posts:
+        assert p.url and p.text and p.score >= 0
+        assert p.data_source in {"hackernews", "reddit", "sample"}
 
 
 def test_demo_generate_shape_and_constraints():

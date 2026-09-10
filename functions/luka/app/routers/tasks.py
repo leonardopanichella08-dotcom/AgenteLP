@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, selectinload
 from ..agent.discovery import DiscoveryQuery, get_provider
 from ..agent.engine import generate_engagement
 from ..agent.prompt import BrandContext, DiscoveredPost as PromptPost
+from ..agent.ranking import engagement_score
 from ..db import get_db
 from ..deps import build_deeplink, get_or_create_user
 from ..kb_index import connection_chunks
@@ -19,7 +20,7 @@ from ..models import (
     GeneratedResponse,
     LinkedInConnection,
 )
-from ..schemas import RegenerateIn, RunDiscoveryIn, TaskDetailOut, TaskOut
+from ..schemas import AnalyzeIn, RegenerateIn, RunDiscoveryIn, TaskDetailOut, TaskOut
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -90,6 +91,70 @@ def _persist_responses(
                 deeplink_url=deeplink,
             )
         )
+
+
+def _generate_for_post(
+    db: Session,
+    task_id: str,
+    conn: LinkedInConnection,
+    ctx: BrandContext,
+    *,
+    rank: int,
+    niche: str,
+    author_name: str,
+    author_headline: str | None,
+    author_profile_url: str | None,
+    url: str,
+    text: str,
+    reactions: int,
+    comments: int,
+    reposts: int,
+    views: int | None,
+    engagement: float,
+    posted_at: datetime | None,
+    data_source: str,
+    n_variants: int,
+) -> int:
+    post_row = DiscoveredPost(
+        task_id=task_id,
+        connection_id=conn.id,
+        linkedin_post_url=url,
+        author_name=author_name,
+        author_headline=author_headline,
+        author_profile_url=author_profile_url,
+        niche=niche,
+        text_excerpt=text,
+        posted_at=posted_at,
+        views=views,
+        reactions=reactions,
+        comments=comments,
+        reposts=reposts,
+        engagement_score=engagement,
+        rank=rank,
+        data_source=data_source,
+    )
+    db.add(post_row)
+    db.flush()
+
+    snippets = connection_chunks(db, conn.id, query=text, k=4)
+    result = generate_engagement(
+        ctx,
+        PromptPost(
+            author_name=author_name,
+            author_headline=author_headline,
+            niche=niche,
+            url=url,
+            text=text,
+            reactions=reactions,
+            comments=comments,
+            views=views,
+            engagement_score=engagement,
+        ),
+        rag_snippets=snippets,
+        n_comment_variants=n_variants,
+    )
+    _persist_responses(db, post_row, conn.id, result)
+    return len(result.get("output", {}).get("comments", []))
 
 
 @router.post("/discovery", response_model=TaskDetailOut, status_code=201)
@@ -187,6 +252,81 @@ def run_discovery(payload: RunDiscoveryIn, db: Session = Depends(get_db)):
         db.add(task)
         db.commit()
         raise HTTPException(500, f"Discovery fallita: {exc}") from exc
+
+    return _task_detail(db, task.id)
+
+
+@router.post("/analyze", response_model=TaskDetailOut, status_code=201)
+def analyze_manual(payload: AnalyzeIn, db: Session = Depends(get_db)):
+    """Genera risposte per post LinkedIn incollati a mano. 100% gratis, sempre accurato."""
+    user = get_or_create_user(db)
+    conn = db.get(LinkedInConnection, payload.connection_id)
+    if conn is None:
+        raise HTTPException(404, "Connessione non trovata")
+
+    task = AgentTask(
+        agent_key="luka",
+        user_id=user.id,
+        connection_id=conn.id,
+        type="manual",
+        status="running",
+        params={"niche": payload.niche, "count": len(payload.posts)},
+        started_at=datetime.utcnow(),
+    )
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+
+    ctx = _brand_context(conn, conn.brand_profile)
+    generated = 0
+    try:
+        scored = sorted(
+            payload.posts,
+            key=lambda p: engagement_score(
+                views=p.views, reactions=p.reactions, comments=p.comments,
+                reposts=0, posted_at=None,
+            ),
+            reverse=True,
+        )
+        for rank, p in enumerate(scored, start=1):
+            generated += _generate_for_post(
+                db, task.id, conn, ctx,
+                rank=rank,
+                niche=payload.niche,
+                author_name=p.author_name,
+                author_headline=p.author_headline,
+                author_profile_url=None,
+                url=p.url or "https://www.linkedin.com/feed/",
+                text=p.text,
+                reactions=p.reactions,
+                comments=p.comments,
+                reposts=0,
+                views=p.views,
+                engagement=engagement_score(
+                    views=p.views, reactions=p.reactions, comments=p.comments,
+                    reposts=0, posted_at=None,
+                ),
+                posted_at=None,
+                data_source="manual",
+                n_variants=payload.variants_per_post,
+            )
+        task.status = "succeeded"
+        task.finished_at = datetime.utcnow()
+        task.result_summary = {
+            "discovered": len(payload.posts),
+            "comments_generated": generated,
+            "provider": "manual",
+            "mode": "llm" if _brand_has_llm() else "demo",
+        }
+        db.add(task)
+        db.commit()
+    except Exception as exc:  # noqa: BLE001
+        task.status = "failed"
+        task.error = str(exc)
+        task.finished_at = datetime.utcnow()
+        db.add(task)
+        db.commit()
+        raise HTTPException(500, f"Analisi fallita: {exc}") from exc
 
     return _task_detail(db, task.id)
 

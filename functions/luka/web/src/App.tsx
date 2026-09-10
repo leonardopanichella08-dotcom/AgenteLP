@@ -73,6 +73,10 @@ export default function App() {
     mutationFn: api.runDiscovery,
     onSuccess: (t) => setTask(t),
   });
+  const analyze = useMutation({
+    mutationFn: api.analyzePosts,
+    onSuccess: (t) => setTask(t),
+  });
   const regen = useMutation({
     mutationFn: ({ postId, kind }: { postId: string; kind: "comment" | "repost_with_comment" }) =>
       api.regenerate(postId, kind),
@@ -115,7 +119,9 @@ export default function App() {
                 <ViralFilters
                   key={active.id}
                   geoOptions={meta.data?.geo_options ?? DEFAULT_GEO}
+                  provider={meta.data?.discovery_provider ?? "free"}
                   running={discovery.isPending}
+                  analyzing={analyze.isPending}
                   onRun={(f) =>
                     discovery.mutate({
                       connection_id: active.id,
@@ -127,16 +133,24 @@ export default function App() {
                       variants_per_post: 2,
                     })
                   }
+                  onAnalyze={(niche, text, author) =>
+                    analyze.mutate({
+                      connection_id: active.id,
+                      niche: niche || "Manuale",
+                      variants_per_post: 2,
+                      posts: [{ text, author_name: author || undefined }],
+                    })
+                  }
                 />
 
-                {discovery.isError && (
+                {(discovery.isError || analyze.isError) && (
                   <p className="rounded-xl border border-warn/30 bg-warn/5 px-4 py-3 text-[13px] text-warn">
-                    {(discovery.error as Error).message}
+                    {((discovery.error || analyze.error) as Error).message}
                   </p>
                 )}
 
-                {discovery.isPending && (
-                  <SkeletonBlock label="Luka sta cercando i post virali e generando le risposte…" />
+                {(discovery.isPending || analyze.isPending) && (
+                  <SkeletonBlock label="Luka sta analizzando e generando le risposte…" />
                 )}
 
                 {task && (
@@ -439,23 +453,43 @@ function KbItem({ label, value }: { label: string; value: string }) {
 /* ------------------------------------------------------------------ */
 /*  Filtri ricerca virale                                              */
 /* ------------------------------------------------------------------ */
+const PROVIDER_LABEL: Record<string, string> = {
+  free: "Hacker News + Reddit (gratis)",
+  sample: "dataset locale",
+  apify: "LinkedIn via Apify",
+};
+
 function ViralFilters({
   geoOptions,
+  provider,
   running,
+  analyzing,
   onRun,
+  onAnalyze,
 }: {
   geoOptions: { value: Geo; label: string }[];
+  provider: string;
   running: boolean;
+  analyzing: boolean;
   onRun: (f: { niche: string; primary: string[]; secondary: string[]; geo: Geo }) => void;
+  onAnalyze: (niche: string, text: string, author: string) => void;
 }) {
   const [niche, setNiche] = useState("AI B2B / Sales Intelligence");
   const [primary, setPrimary] = useState("sales, automation, icp, outbound");
   const [secondary, setSecondary] = useState("revops, pipeline, forecast");
   const [geo, setGeo] = useState<Geo>("italy");
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [pasteAuthor, setPasteAuthor] = useState("");
 
   return (
     <section className="rounded-2xl border border-line bg-surface p-5 shadow-card">
-      <h2 className="text-sm font-semibold">Ricerca post virali</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold">Ricerca post virali</h2>
+        <span className="text-[11px] text-ink-faint">
+          fonte: {PROVIDER_LABEL[provider] ?? provider}
+        </span>
+      </div>
       <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_190px_auto] lg:items-end">
         <Field label="Nicchia">
           <input
@@ -513,6 +547,42 @@ function ViralFilters({
           {running ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
           Cerca Post Virali
         </button>
+      </div>
+
+      <div className="mt-3 border-t border-line pt-3">
+        <button
+          onClick={() => setPasteOpen((v) => !v)}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-brand hover:text-brand-hover"
+        >
+          <ChevronDown
+            className={clsx("h-3.5 w-3.5 transition", pasteOpen && "rotate-180")}
+          />
+          Oppure incolla un post di LinkedIn (100% preciso)
+        </button>
+        {pasteOpen && (
+          <div className="mt-3 space-y-2">
+            <input
+              value={pasteAuthor}
+              onChange={(e) => setPasteAuthor(e.target.value)}
+              className="input"
+              placeholder="Autore del post (facoltativo)"
+            />
+            <textarea
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              className="input min-h-[110px] resize-y"
+              placeholder="Incolla qui il testo del post…"
+            />
+            <button
+              onClick={() => onAnalyze(niche, pasteText.trim(), pasteAuthor.trim())}
+              disabled={analyzing || pasteText.trim().length < 20}
+              className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-medium text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              Analizza con Luka
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

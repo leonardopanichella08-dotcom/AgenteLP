@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import json
 import re
 from dataclasses import dataclass, field
@@ -14,6 +15,11 @@ from .ranking import engagement_score
 _DATA = Path(__file__).resolve().parent.parent / "data" / "seed_posts.json"
 _TOKEN_RE = re.compile(r"[a-z0-9]{2,}")
 _TERM_STOP = {"di", "e", "the", "and", "per", "con", "in"}
+_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def _clean_html(text: str) -> str:
+    return html.unescape(_TAG_RE.sub("", text or "")).strip()
 
 # Quali region includere per ogni scelta UI.
 _GEO_INCLUDE = {
@@ -281,8 +287,174 @@ def _parse_dt(value: str | None) -> datetime | None:
         return None
 
 
+# ─────────────────── Free (Hacker News + Reddit, zero chiavi) ───────────────────
+
+
+class FreeDiscoveryProvider(DiscoveryProvider):
+    """Segnale di nicchia 100% gratuito, senza account nè API key.
+
+    NON sono post LinkedIn: sono i contenuti che stanno performando ORA sulla
+    stessa nicchia su Hacker News (Algolia API, nessuna auth) e Reddit (JSON
+    pubblico). Servono a Luka per cavalcare un trend reale. Per i post
+    LinkedIn veri: provider "apify" (a pagamento) o incolla-post manuale.
+
+    Se la rete non risponde, ricade sul dataset locale.
+    """
+
+    name = "free"
+    HN_URL = "https://hn.algolia.com/api/v1/search"
+    _SUBREDDITS = [
+        "sales", "marketing", "Entrepreneur", "startups", "SaaS",
+        "artificial", "personalbranding", "B2BMarketing", "smallbusiness",
+        "digital_marketing", "growmybusiness",
+    ]
+    _WINDOW = {"italy": "past-month", "europe": "past-month", "world": "past-week"}
+
+    def discover(self, q: DiscoveryQuery) -> list[RawPost]:
+        # Algolia/Reddit rendono meglio con query brevi: max ~5 parole chiave.
+        words: list[str] = []
+        for term in [q.niche, *q.keywords_primary, *q.keywords_secondary]:
+            for w in _TOKEN_RE.findall((term or "").lower()):
+                if w not in _TERM_STOP and w not in words:
+                    words.append(w)
+        query = " ".join(words[:5]) or (q.niche or "b2b")
+
+        out: list[RawPost] = []
+        try:
+            out.extend(self._hacker_news(query, q))
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            out.extend(self._reddit(query, q))
+        except Exception:  # noqa: BLE001
+            pass
+
+        # dedup per url, ordina per score
+        seen: set[str] = set()
+        deduped = []
+        for p in sorted(out, key=lambda x: x.score, reverse=True):
+            if p.url in seen:
+                continue
+            seen.add(p.url)
+            deduped.append(p)
+
+        if not deduped:
+            return SampleDiscoveryProvider().discover(q)
+        return deduped[: q.limit]
+
+    def _hacker_news(self, query: str, q: DiscoveryQuery) -> list[RawPost]:
+        days = 45 if q.geo == "world" else 120
+        cutoff = int((datetime.now(timezone.utc) - timedelta(days=days)).timestamp())
+        params = {
+            "query": query,
+            "tags": "story",
+            "hitsPerPage": 40,
+            "numericFilters": f"points>5,created_at_i>{cutoff}",
+        }
+        with httpx.Client(timeout=15) as c:
+            r = c.get(self.HN_URL, params=params)
+            r.raise_for_status()
+            hits = r.json().get("hits", [])
+        # niente risultati recenti: allarga (query piu' corta, finestra piu' ampia)
+        if not hits:
+            cutoff2 = int((datetime.now(timezone.utc) - timedelta(days=365)).timestamp())
+            params["query"] = " ".join(query.split()[:2]) or query
+            params["numericFilters"] = f"points>10,created_at_i>{cutoff2}"
+            with httpx.Client(timeout=15) as c:
+                r = c.get(self.HN_URL, params=params)
+                r.raise_for_status()
+                hits = r.json().get("hits", [])
+
+        rows: list[RawPost] = []
+        for h in hits:
+            title = (h.get("title") or "").strip()
+            if not title:
+                continue
+            points = int(h.get("points") or 0)
+            n_comments = int(h.get("num_comments") or 0)
+            url = h.get("url") or f"https://news.ycombinator.com/item?id={h.get('objectID')}"
+            posted_at = _parse_dt(h.get("created_at"))
+            body = _clean_html(h.get("story_text") or "")
+            text = f"{title}\n\n{body}".strip() if body else title
+            est_views = (points + 4 * n_comments) * 30 or 1
+            rows.append(
+                RawPost(
+                    author_name=h.get("author") or "utente Hacker News",
+                    author_headline="Hacker News",
+                    author_profile_url=f"https://news.ycombinator.com/user?id={h.get('author')}",
+                    niche=q.niche,
+                    url=url,
+                    text=text[:1200],
+                    reactions=points,
+                    comments=n_comments,
+                    reposts=0,
+                    views=est_views,
+                    posted_at=posted_at,
+                    data_source="hackernews",
+                    score=engagement_score(
+                        views=est_views, reactions=points, comments=n_comments,
+                        reposts=0, posted_at=posted_at, half_life_days=30,
+                    ),
+                )
+            )
+        return rows
+
+    def _reddit(self, query: str, q: DiscoveryQuery) -> list[RawPost]:
+        window = self._WINDOW.get(q.geo, "past-week").replace("past-", "")
+        subs = "+".join(self._SUBREDDITS)
+        params = {
+            "q": query, "restrict_sr": 0, "sort": "top",
+            "t": window, "limit": 40, "type": "link",
+        }
+        headers = {"User-Agent": "AgenteLP-LUKA/0.1 (discovery; contact via github)"}
+        url = f"https://www.reddit.com/r/{subs}/search.json"
+        with httpx.Client(timeout=15, headers=headers, follow_redirects=True) as c:
+            r = c.get(url, params=params)
+            r.raise_for_status()
+            children = r.json().get("data", {}).get("children", [])
+
+        rows: list[RawPost] = []
+        for ch in children:
+            d = ch.get("data", {})
+            title = (d.get("title") or "").strip()
+            if not title:
+                continue
+            ups = int(d.get("ups") or d.get("score") or 0)
+            n_comments = int(d.get("num_comments") or 0)
+            body = _clean_html(d.get("selftext") or "")
+            text = f"{title}\n\n{body}".strip() if body else title
+            posted_at = (
+                datetime.fromtimestamp(d["created_utc"], tz=timezone.utc)
+                if d.get("created_utc") else None
+            )
+            est_views = (ups + 4 * n_comments) * 25 or 1
+            rows.append(
+                RawPost(
+                    author_name=f"u/{d.get('author', 'utente')}",
+                    author_headline=f"Reddit · r/{d.get('subreddit', '')}",
+                    author_profile_url=f"https://www.reddit.com/user/{d.get('author', '')}",
+                    niche=q.niche,
+                    url="https://www.reddit.com" + d.get("permalink", ""),
+                    text=text[:1200],
+                    reactions=ups,
+                    comments=n_comments,
+                    reposts=0,
+                    views=est_views,
+                    posted_at=posted_at,
+                    data_source="reddit",
+                    score=engagement_score(
+                        views=est_views, reactions=ups, comments=n_comments,
+                        reposts=0, posted_at=posted_at, half_life_days=30,
+                    ),
+                )
+            )
+        return rows
+
+
 def get_provider() -> DiscoveryProvider:
     s = get_settings()
     if s.has_apify:
         return ApifyDiscoveryProvider(s.apify_token, s.apify_actor)  # type: ignore[arg-type]
-    return SampleDiscoveryProvider()
+    if s.discovery_provider == "sample":
+        return SampleDiscoveryProvider()
+    return FreeDiscoveryProvider()

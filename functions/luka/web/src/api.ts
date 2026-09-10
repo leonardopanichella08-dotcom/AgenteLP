@@ -50,6 +50,20 @@ export const api = {
     variants_per_post: number;
   }) => req<TaskDetail>("/api/tasks/discovery", { method: "POST", body: JSON.stringify(body) }),
 
+  analyzePosts: (body: {
+    connection_id: string;
+    niche: string;
+    variants_per_post: number;
+    posts: {
+      text: string;
+      author_name?: string;
+      author_headline?: string;
+      url?: string;
+      reactions?: number;
+      comments?: number;
+    }[];
+  }) => req<TaskDetail>("/api/tasks/analyze", { method: "POST", body: JSON.stringify(body) }),
+
   task: (id: string) => req<TaskDetail>(`/api/tasks/${id}`),
   regenerate: (postId: string, kind: "comment" | "repost_with_comment") =>
     req<TaskDetail>(`/api/tasks/posts/${postId}/regenerate`, {

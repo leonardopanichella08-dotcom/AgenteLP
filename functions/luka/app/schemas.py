@@ -151,3 +151,22 @@ class TaskDetailOut(TaskOut):
 
 class RegenerateIn(BaseModel):
     kind: str = Field(default="comment", pattern="^(comment|repost_with_comment)$")
+
+
+class ManualPost(BaseModel):
+    text: str = Field(min_length=20)
+    author_name: str = "Autore del post"
+    author_headline: str | None = None
+    url: str | None = None
+    reactions: int = 0
+    comments: int = 0
+    views: int | None = None
+
+
+class AnalyzeIn(BaseModel):
+    """Analisi di post incollati a mano (100% gratis, sempre accurata)."""
+
+    connection_id: str
+    niche: str = "Manuale"
+    posts: list[ManualPost] = Field(min_length=1, max_length=10)
+    variants_per_post: int = Field(default=2, ge=1, le=3)

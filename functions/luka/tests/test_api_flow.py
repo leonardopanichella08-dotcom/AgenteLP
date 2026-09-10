@@ -106,6 +106,52 @@ def test_regenerate_replaces_not_appends(client, personal_connection):
     assert before == after == (2, 1)
 
 
+def test_manual_analyze_pasted_posts(client, personal_connection):
+    cid = personal_connection["id"]
+    r = client.post(
+        "/api/tasks/analyze",
+        json={
+            "connection_id": cid,
+            "niche": "AI B2B",
+            "variants_per_post": 2,
+            "posts": [
+                {
+                    "author_name": "Elena Bianchi",
+                    "author_headline": "VP Sales @ DataForge",
+                    "url": "https://www.linkedin.com/feed/update/urn:li:activity:123",
+                    "text": "La maggior parte dei team sales usa l'AI per scrivere piu' email. "
+                            "Sbagliato: il collo di bottiglia e' la qualificazione degli account.",
+                    "reactions": 900,
+                    "comments": 120,
+                },
+                {
+                    "author_name": "Tom Hughes",
+                    "text": "Ho spento il tool di sales automation dopo 3 mesi: i reply rate sono "
+                            "crollati quando i prospect hanno fiutato il template.",
+                    "reactions": 300,
+                    "comments": 40,
+                },
+            ],
+        },
+    )
+    assert r.status_code == 201
+    task = r.json()
+    assert task["status"] == "succeeded"
+    assert task["type"] == "manual"
+    assert len(task["posts"]) == 2
+    top = task["posts"][0]
+    assert top["author_name"] == "Elena Bianchi"  # piu' engagement -> rank 1
+    assert any(x["kind"] == "comment" for x in top["responses"])
+
+
+def test_analyze_rejects_too_short_text(client, personal_connection):
+    r = client.post(
+        "/api/tasks/analyze",
+        json={"connection_id": personal_connection["id"], "posts": [{"text": "corto"}]},
+    )
+    assert r.status_code == 422
+
+
 def test_task_listing(client):
     tasks = client.get("/api/tasks").json()
     assert isinstance(tasks, list) and tasks
