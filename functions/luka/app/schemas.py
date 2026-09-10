@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # ─────────────────────────── Connections ───────────────────────────
 
@@ -27,17 +27,30 @@ class ConnectionFromUsernameIn(BaseModel):
 class BrandProfileOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    mission: str
-    value_proposition: str
-    icp: str
-    market_context: str
-    tone_of_voice: str
+    mission: str = ""
+    value_proposition: str = ""
+    icp: str = ""
+    market_context: str = ""
+    tone_of_voice: str = ""
     niche: str = ""
     keywords_primary: list[str] = []
     keywords_secondary: list[str] = []
-    banned_phrases: list[str]
-    goal: str
+    banned_phrases: list[str] = []
+    goal: str = ""
     generated_by_model: str | None = None
+
+    @field_validator(
+        "mission", "value_proposition", "icp", "market_context", "tone_of_voice", "niche", "goal",
+        mode="before",
+    )
+    @classmethod
+    def _str_or_empty(cls, v: object) -> str:
+        return "" if v is None else str(v)
+
+    @field_validator("keywords_primary", "keywords_secondary", "banned_phrases", mode="before")
+    @classmethod
+    def _list_or_empty(cls, v: object) -> list:
+        return [] if v is None else list(v)
 
 
 class ConnectionOut(BaseModel):

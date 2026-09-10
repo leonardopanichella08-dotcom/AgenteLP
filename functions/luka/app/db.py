@@ -73,6 +73,18 @@ def _ensure_columns() -> None:
                     log.info("aggiunta colonna %s.%s", table, name)
                 except Exception as exc:  # noqa: BLE001
                     log.warning("ALTER TABLE %s ADD %s fallita: %s", table, name, exc)
+        # backfill dei NULL sulle colonne appena aggiunte (righe preesistenti)
+        for col in ("keywords_primary", "keywords_secondary"):
+            try:
+                conn.execute(text(
+                    f"UPDATE brand_profiles SET {col} = '[]' WHERE {col} IS NULL"
+                ))
+            except Exception:  # noqa: BLE001
+                pass
+        try:
+            conn.execute(text("UPDATE brand_profiles SET niche = '' WHERE niche IS NULL"))
+        except Exception:  # noqa: BLE001
+            pass
 
 
 def init_db() -> None:
