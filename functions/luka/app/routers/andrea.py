@@ -132,11 +132,24 @@ def step(run_id: str, db: Session = Depends(get_db)):
             raise HTTPException(502, run.error) from exc
         return _detail(db, run.id)
 
+    # run gia' concluso ma senza dossier (backfill su run vecchi): scrivilo ora.
+    if run.status == "succeeded" and not run.dossier:
+        _write_dossier(db, run)
+        return _detail(db, run.id)
+
     if run.status != "running":
         return run
     idx = run.current_iteration + 1
     if idx > run.max_iterations:
-        _finalize(db, run)
+        # tutte le iterazioni fatte: prima il consolidamento finale (report +
+        # narrativa + assunzioni), poi -- in una chiamata separata, per non
+        # sommare due generazioni pesanti nella stessa richiesta HTTP -- il
+        # dossier narrativo completo. Ogni sotto-fase resta status="running"
+        # finche' anche il dossier non e' scritto.
+        if not run.final_report:
+            _finalize(db, run)
+            return _detail(db, run.id)
+        _write_dossier(db, run)
         return _detail(db, run.id)
 
     prev = run.iterations[-1].version_md if run.iterations else _full_context(run)
@@ -173,12 +186,10 @@ def step(run_id: str, db: Session = Depends(get_db)):
     run.current_iteration = idx
     run.model = model
     db.commit()
-
-    run = _detail(db, run.id)
-    if run.current_iteration >= run.max_iterations:
-        _finalize(db, run)
-        run = _detail(db, run.id)
-    return run
+    # Il consolidamento finale (report + dossier) resta per il /step
+    # successivo: tenerlo separato dall'ultima iterazione evita di sommare
+    # due generazioni pesanti nella stessa richiesta HTTP (rischio timeout).
+    return _detail(db, run.id)
 
 
 def _finalize(db: Session, run: AndreaRun) -> None:
@@ -199,8 +210,8 @@ def _finalize(db: Session, run: AndreaRun) -> None:
     run.narrative = out.get("narrative_md", "")
     run.assumptions = out.get("assumptions", {}) or {}
     run.model = model
-    run.status = "succeeded"
-    run.finished_at = datetime.utcnow()
+    # status resta "running": manca ancora il dossier finale (_write_dossier
+    # lo chiude in una chiamata separata, chiamata dal prossimo /step).
 
     # cervello permanente: aggiungi le nuove leggi (dedupe per code)
     existing = set(db.scalars(select(SimulatorLaw.code)))
@@ -214,6 +225,51 @@ def _finalize(db: Session, run: AndreaRun) -> None:
             source=law.get("source", f"[FONTE: {run.startup_name}, 2026]"),
         ))
         existing.add(code)
+    db.commit()
+
+
+def _iterations_ctx(run: AndreaRun) -> str:
+    parts = []
+    for it in run.iterations:
+        parts.append(
+            f"### Iterazione {it.index} — {it.lethal_flaw}\n"
+            f"Stress-test: {it.stress_test}\n\n"
+            f"Casi reali citati: {it.research_notes}\n\n"
+            f"Versione risultante V{it.index}: {it.version_md}"
+        )
+    return "\n\n".join(parts) or run.input_text
+
+
+def _write_dossier(db: Session, run: AndreaRun) -> None:
+    """Ultima fase: dossier narrativo completo (8-9 pagine) che diventa la
+    descrizione definitiva del progetto. Chiamabile anche su run gia'
+    "succeeded" senza dossier, per fare il backfill sui run piu' vecchi."""
+    was_succeeded = run.status == "succeeded"
+    try:
+        out, model = engine.generate_dossier(
+            startup_name=run.startup_name,
+            systemic_map=run.systemic_map,
+            lethal_flaws=run.lethal_flaws or [],
+            iterations_ctx=_iterations_ctx(run),
+            final_report=run.final_report,
+            narrative=run.narrative,
+            assumptions=run.assumptions or {},
+        )
+    except Exception as exc:  # noqa: BLE001
+        if not was_succeeded:
+            run.status = "failed"
+            run.error = f"Dossier di progetto: {exc}"
+            run.finished_at = datetime.utcnow()
+            db.commit()
+            return
+        db.commit()
+        raise HTTPException(502, f"Dossier di progetto: {exc}") from exc
+
+    run.dossier = out.get("dossier_md", "")
+    run.model = model
+    if not was_succeeded:
+        run.status = "succeeded"
+        run.finished_at = datetime.utcnow()
     db.commit()
 
 
@@ -233,6 +289,7 @@ def delete_run(run_id: str, db: Session = Depends(get_db)):
 _ARTIFACTS = {
     "report_pdf": ("application/pdf", "Report_Strategico_{name}_VFINALE.pdf"),
     "narrative_pdf": ("application/pdf", "Analisi_Narrativa_PEF_{name}_VFINALE.pdf"),
+    "dossier_pdf": ("application/pdf", "Dossier_Progetto_{name}_VFINALE.pdf"),
     "financial_xlsx": (
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Piano_Finanziario_{name}_VFINALE.xlsx",
@@ -255,6 +312,10 @@ def artifact(run_id: str, kind: str, db: Session = Depends(get_db)):
         data = docgen.build_xlsx(run.startup_name, run.assumptions or {})
     elif kind == "report_pdf":
         data = docgen.build_pdf(f"{run.startup_name} — Report Strategico V-FINALE", run.final_report)
+    elif kind == "dossier_pdf":
+        if not run.dossier:
+            raise HTTPException(409, "Dossier non ancora generato per questo run")
+        data = docgen.build_pdf(f"{run.startup_name} — Dossier di Progetto", run.dossier)
     else:
         data = docgen.build_pdf(f"{run.startup_name} — Analisi Narrativa PEF", run.narrative)
 

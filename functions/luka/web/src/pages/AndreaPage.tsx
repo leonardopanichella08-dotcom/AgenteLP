@@ -62,7 +62,10 @@ export default function AndreaPage() {
         stepping.current = false;
         setTimeout(() => qc.invalidateQueries({ queryKey: ["andrea-run", run.id] }), 300);
       });
-  }, [run?.id, run?.status, run?.current_iteration, qc]); // eslint-disable-line
+    // le due sotto-fasi finali (report -> dossier) non incrementano
+    // current_iteration: senza questi due flag il loop si fermerebbe dopo il
+    // report e non proseguirebbe da solo alla scrittura del dossier.
+  }, [run?.id, run?.status, run?.current_iteration, !!run?.final_report, !!run?.dossier, qc]); // eslint-disable-line
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_260px]">
@@ -71,7 +74,8 @@ export default function AndreaPage() {
           <h1 className="text-lg font-semibold tracking-tight">ANDREA — A.I.R.S.</h1>
           <p className="text-[13px] text-ink-soft">
             Incubazione reversiva: distrugge l'idea in 10 iterazioni (stress-test sistemico →
-            casi reali → ridisegno), poi report + piano finanziario con formule vive.
+            casi reali → ridisegno), poi report + piano finanziario con formule vive + dossier
+            narrativo completo (8-9 pagine) come descrizione definitiva del progetto.
           </p>
         </div>
 
@@ -178,7 +182,7 @@ function NewRunForm({
               ))}
             </select>
           </label>
-          <span className="text-[11px] text-ink-faint">~{Math.round((iters + 2) * 0.8)} min</span>
+          <span className="text-[11px] text-ink-faint">~{Math.round((iters + 4) * 0.9)} min (incluso il dossier finale)</span>
         </div>
         {error && <p className="text-[12px] text-warn">{error}</p>}
         <button
@@ -255,7 +259,11 @@ function RunView({ run, stepError, onReset }: { run: AndreaRun; stepError: strin
             <Loader2 className="h-3.5 w-3.5 animate-spin text-brand" />
             {run.current_iteration === 0
               ? "Costruisco la mappa sistemica e cerco le falle letali…"
-              : `Stress-test dell'iterazione ${run.current_iteration + 1}…`}
+              : run.current_iteration < run.max_iterations
+              ? `Stress-test dell'iterazione ${run.current_iteration + 1}…`
+              : !run.final_report
+              ? "Scrivo il Report Strategico Definitivo…"
+              : "Scrivo il Dossier di Progetto completo (8-9 pagine, può richiedere qualche minuto)…"}
           </p>
         </div>
       )}
@@ -346,6 +354,9 @@ function RunView({ run, stepError, onReset }: { run: AndreaRun; stepError: strin
           >
             <Md text={run.final_report} />
           </Card>
+
+          <DossierCard run={run} />
+
           <details className="rounded-2xl border border-line bg-surface p-5 shadow-card">
             <summary className="cursor-pointer text-sm font-semibold">Analisi narrativa del piano</summary>
             <div className="mt-3">
@@ -361,6 +372,54 @@ function RunView({ run, stepError, onReset }: { run: AndreaRun; stepError: strin
         </>
       )}
     </div>
+  );
+}
+
+function DossierCard({ run }: { run: AndreaRun }) {
+  const qc = useQueryClient();
+  const gen = useMutation({
+    mutationFn: () => api.andreaStep(run.id),
+    onSuccess: (r) => qc.setQueryData(["andrea-run", run.id], r),
+  });
+
+  if (!run.dossier) {
+    return (
+      <Card title="Dossier di Progetto">
+        <p className="text-[13px] text-ink-soft">
+          Manca ancora il dossier narrativo completo (8-9 pagine): racconta il progetto dall'inizio
+          alla versione finale e diventa la descrizione ufficiale della startup.
+        </p>
+        {gen.isError && (
+          <p className="mt-2 text-[12px] text-warn">{(gen.error as Error).message}</p>
+        )}
+        <button
+          onClick={() => gen.mutate()}
+          disabled={gen.isPending}
+          className="mt-3 inline-flex items-center gap-2 rounded-lg bg-brand-tech px-4 py-2.5 text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
+        >
+          {gen.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+          {gen.isPending ? "Scrivo il dossier (qualche minuto)…" : "Genera Dossier di Progetto"}
+        </button>
+      </Card>
+    );
+  }
+
+  return (
+    <details className="rounded-2xl border border-line bg-surface p-5 shadow-card" open>
+      <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-2 text-sm font-semibold">
+        <span>Dossier di Progetto — descrizione completa</span>
+        <a
+          href={api.andreaArtifactUrl(run.id, "dossier_pdf")}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-xs font-medium hover:border-line-strong"
+        >
+          <Download className="h-3.5 w-3.5" /> Dossier PDF
+        </a>
+      </summary>
+      <div className="mt-3">
+        <Md text={run.dossier} />
+      </div>
+    </details>
   );
 }
 

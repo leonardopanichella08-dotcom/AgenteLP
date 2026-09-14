@@ -94,7 +94,10 @@ def iteration_prompt(
         "4. EVOLUZIONE: genera la versione V" + str(index) + " completa (pitch, modello di "
         "business, numeri chiave). Sii drastico: puoi stravolgere il modello se il sistema "
         "dimostra che quello precedente fallirebbe. I numeri chiave devono essere coerenti "
-        "(CAC, LTV, LTV/CAC, ARPU, churn, break-even mese, team size, OPEX annuo, ARR anno 1)."
+        "(CAC, LTV, LTV/CAC, ARPU, churn, break-even mese, team size, OPEX annuo, ARR anno 1).\n\n"
+        "Scrivi per esteso, in paragrafi discorsivi, non in elenchi telegrafici: stress_test e "
+        "version_md devono essere sostanziosi (alcune centinaia di parole ciascuno), con il "
+        "ragionamento numerico esplicitato passo per passo, non solo la conclusione."
     )
 
 
@@ -148,8 +151,95 @@ def finalize_prompt(startup_name: str, final_version: str, all_flaws: list[str])
         "4. new_laws: 1-4 nuove Leggi Universali scoperte in questo progetto. Una legge e' "
         "universale se dimostrata da un caso reale, si applica a settori diversi da questo, "
         "e non e' banale. Ognuna con code (es. 'GTM-4'), module, title, body (con la formula "
-        "pratica se c'e'), source ('[FONTE: " + startup_name + ", 2026]')."
+        "pratica se c'e'), source ('[FONTE: " + startup_name + ", 2026]').\n\n"
+        "report_md e narrative_md devono essere documenti sostanziosi e completi (non "
+        "riassunti): report_md almeno 800 parole, narrative_md almeno 600 parole, in "
+        "paragrafi discorsivi con i numeri incorporati nel ragionamento."
     )
+
+
+DOSSIER_MIN_WORDS = 4500
+
+
+def dossier_prompt(
+    startup_name: str,
+    systemic_map: str,
+    lethal_flaws: list[dict],
+    iterations_ctx: str,
+    final_report: str,
+    narrative: str,
+    assumptions: dict,
+) -> str:
+    flaws_block = "\n".join(
+        f"- {f['flaw']} ({f['probability']}): {f['death_mechanism']}" for f in lethal_flaws
+    )
+    assumptions_block = "\n".join(f"- {k}: {v}" for k, v in (assumptions or {}).items())
+    return (
+        f"{IDENTITY}\n\n"
+        "FASE FINALE — DOSSIER DI PROGETTO. Questo NON e' un altro round distruttivo: "
+        f"il protocollo su {startup_name} e' concluso. Il tuo compito ora e' scrivere il "
+        "documento che DIVENTA la descrizione ufficiale e definitiva del progetto — quello "
+        "che chiunque (investitore, co-fondatore, la stessa startup tra un anno) legge per "
+        "capire tutto: da dove e' partita l'idea a come e' arrivata alla versione finale, "
+        "e perche' e' fatta cosi'.\n\n"
+        f"MATERIALE DISPONIBILE SU {startup_name}:\n\n"
+        f"--- MAPPA SISTEMICA INIZIALE ---\n{systemic_map}\n\n"
+        f"--- FALLE LETALI IDENTIFICATE ---\n{flaws_block}\n\n"
+        f"--- PERCORSO DELLE ITERAZIONI DISTRUTTIVE (dalla V0 alla V-FINALE) ---\n{iterations_ctx}\n\n"
+        f"--- REPORT STRATEGICO DEFINITIVO ---\n{final_report}\n\n"
+        f"--- ANALISI NARRATIVA GIA' PRODOTTA ---\n{narrative}\n\n"
+        f"--- ASSUNZIONI NUMERICHE DEL PIANO FINANZIARIO ---\n{assumptions_block}\n\n"
+        "ISTRUZIONI RIGIDE:\n\n"
+        "1. SCALETTA: prima di scrivere, struttura il dossier in GRUPPI (## in markdown) e "
+        "SOTTOGRUPPI (### in markdown). Usa esattamente questa scaletta come ossatura, "
+        "adattando i titoli al progetto specifico:\n"
+        "   ## 1. Genesi e contesto — perche' esiste questo progetto, il problema originale, "
+        "il mercato di partenza\n"
+        "   ## 2. Mappa sistemica e falle letali — le forze di mercato mappate, ognuna delle "
+        "5 falle spiegata per esteso con il suo meccanismo di morte\n"
+        "   ## 3. Il percorso di distruzione e ricostruzione — un ### per OGNI iterazione "
+        "realmente eseguita: qual era la falla, cosa ha dimostrato lo stress-test, quale caso "
+        "reale e' stato usato come prova, come e' cambiato il modello e perche'\n"
+        "   ## 4. Il modello finale (V-FINALE) — descrizione completa e integrale: value "
+        "proposition, ICP, modello di revenue, pricing, canali di acquisizione, struttura "
+        "del team\n"
+        "   ## 5. Go-to-market e crescita — sequenza dei primi 24 mesi, canali, milestone\n"
+        "   ## 6. Unit economics e piano finanziario narrato — CAC, LTV, ARPU, churn, "
+        "break-even spiegati in prosa con il loro significato pratico (i numeri esatti sono "
+        "gia' nel file Excel, qui vanno raccontati e interpretati)\n"
+        "   ## 7. Moat e difendibilita' — perche' un incumbent o un clone non lo distrugge\n"
+        "   ## 8. Rischi residui e piano di mitigazione — cosa puo' ancora rompere il modello "
+        "e cosa fare se succede\n"
+        "   ## 9. Conclusione e prossimi passi operativi\n\n"
+        "2. SVILUPPO: ogni sottogruppo va scritto per esteso in paragrafi discorsivi completi "
+        "(mai solo elenchi puntati: gli elenchi si usano al massimo per riepilogare numeri "
+        "dentro un paragrafo gia' scritto in prosa). Non riassumere: sviluppa, spiega il "
+        "perche' oltre al cosa, collega ogni scelta alla falla che l'ha causata e al caso "
+        "reale che la giustifica.\n\n"
+        f"3. LUNGHEZZA OBBLIGATORIA: il dossier deve essere lunghissimo e completo — "
+        f"ALMENO {DOSSIER_MIN_WORDS} PAROLE (non caratteri: parole), equivalenti a 8-9 pagine "
+        "PDF. Se un capitolo ti sembra 'finito' troppo presto, e' un segnale che stai "
+        "riassumendo invece di raccontare: aggiungi dettagli, esempi numerici, alternative "
+        "scartate, implicazioni. Questo e' l'output piu' importante di tutto il protocollo: "
+        "deve essere preciso al millimetro, mai vago, mai generico.\n\n"
+        "4. PRECISIONE: ogni numero citato deve essere coerente con le assunzioni e il report "
+        "sopra. Non inventare numeri diversi da quelli gia' stabiliti."
+    )
+
+
+DOSSIER_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "dossier_md": {
+            "type": "STRING",
+            "description": (
+                f"Il dossier completo in Markdown, minimo {DOSSIER_MIN_WORDS} parole, "
+                "strutturato con ## e ### secondo la scaletta richiesta."
+            ),
+        },
+    },
+    "required": ["dossier_md"],
+}
 
 
 FINALIZE_SCHEMA = {

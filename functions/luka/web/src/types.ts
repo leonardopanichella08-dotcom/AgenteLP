@@ -138,6 +138,7 @@ export interface AndreaRun {
   lethal_flaws: { flaw: string; death_mechanism: string; probability: string }[];
   final_report: string;
   narrative: string;
+  dossier: string;
   assumptions: Record<string, number>;
   model: string | null;
   error: string | null;

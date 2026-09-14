@@ -23,6 +23,9 @@ _ADD_COLUMNS: dict[str, dict[str, str]] = {
         "linkedin_urn": "VARCHAR(255)",
         "auth_method": "VARCHAR(16) DEFAULT 'manual'",
     },
+    "andrea_runs": {
+        "dossier": "TEXT DEFAULT ''",
+    },
 }
 
 

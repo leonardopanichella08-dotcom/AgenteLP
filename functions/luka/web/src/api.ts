@@ -103,6 +103,9 @@ export const api = {
   andreaDeleteDoc: (id: string, docId: string) =>
     req<void>(`/api/andrea/runs/${id}/documents/${docId}`, { method: "DELETE" }),
   andreaDelete: (id: string) => req<void>(`/api/andrea/runs/${id}`, { method: "DELETE" }),
-  andreaArtifactUrl: (id: string, kind: "report_pdf" | "narrative_pdf" | "financial_xlsx") =>
+  andreaArtifactUrl: (
+    id: string,
+    kind: "report_pdf" | "narrative_pdf" | "financial_xlsx" | "dossier_pdf",
+  ) =>
     `${BASE}/api/andrea/runs/${id}/artifact/${kind}`,
 };

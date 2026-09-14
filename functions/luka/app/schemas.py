@@ -259,6 +259,7 @@ class AndreaRunOut(BaseModel):
     lethal_flaws: list[dict] = []
     final_report: str
     narrative: str
+    dossier: str = ""
     assumptions: dict = {}
     model: str | None = None
     error: str | None = None
@@ -276,3 +277,8 @@ class AndreaRunOut(BaseModel):
     @classmethod
     def _as(cls, v: object) -> dict:
         return {} if v is None else dict(v)
+
+    @field_validator("dossier", mode="before")
+    @classmethod
+    def _dz(cls, v: object) -> str:
+        return "" if v is None else str(v)

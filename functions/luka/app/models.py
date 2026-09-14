@@ -256,6 +256,7 @@ class AndreaRun(Base):
     lethal_flaws: Mapped[list] = mapped_column(JSON, default=list)
     final_report: Mapped[str] = mapped_column(Text, default="")
     narrative: Mapped[str] = mapped_column(Text, default="")
+    dossier: Mapped[str] = mapped_column(Text, default="")  # dossier narrativo completo (8-9 pag.)
     assumptions: Mapped[dict] = mapped_column(JSON, default=dict)
     model: Mapped[str | None] = mapped_column(String(64))
     error: Mapped[str | None] = mapped_column(Text)
