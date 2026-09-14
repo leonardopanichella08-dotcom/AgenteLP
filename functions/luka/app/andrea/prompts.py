@@ -237,23 +237,11 @@ def dossier_prompt(
         "importante di tutto il protocollo: deve essere preciso al millimetro, mai vago, "
         "mai generico.\n\n"
         "4. PRECISIONE: ogni numero citato deve essere coerente con le assunzioni e il report "
-        "sopra. Non inventare numeri diversi da quelli gia' stabiliti."
+        "sopra. Non inventare numeri diversi da quelli gia' stabiliti.\n\n"
+        "FORMATO OUTPUT: rispondi SOLO con il markdown del dossier, dalla riga '## 1. ...' "
+        "in poi. Nessun preambolo, nessun commento fuori dal documento, nessun blocco di "
+        "codice (niente ```), nessun JSON: solo il testo del dossier."
     )
-
-
-DOSSIER_SCHEMA = {
-    "type": "OBJECT",
-    "properties": {
-        "dossier_md": {
-            "type": "STRING",
-            "description": (
-                f"Il dossier completo in Markdown, minimo {DOSSIER_MIN_WORDS} parole, "
-                "strutturato con ## e ### secondo la scaletta richiesta."
-            ),
-        },
-    },
-    "required": ["dossier_md"],
-}
 
 
 FINALIZE_SCHEMA = {
