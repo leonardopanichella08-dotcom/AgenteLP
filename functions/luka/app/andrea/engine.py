@@ -15,7 +15,7 @@ from . import prompts
 MAP_TOKENS = 4500
 ITERATION_TOKENS = 7000
 FINALIZE_TOKENS = 9000
-DOSSIER_TOKENS = 10000  # dossier finale: 8-9 pagine, alcune migliaia di parole
+DOSSIER_TOKENS = 13000  # dossier finale: 8-9 pagine, ~5800+ parole
 MAX_TOKENS = FINALIZE_TOKENS  # retro-compatibilita'
 
 

@@ -158,7 +158,7 @@ def finalize_prompt(startup_name: str, final_version: str, all_flaws: list[str])
     )
 
 
-DOSSIER_MIN_WORDS = 4500
+DOSSIER_MIN_WORDS = 5800
 
 
 def dossier_prompt(
@@ -218,10 +218,17 @@ def dossier_prompt(
         "reale che la giustifica.\n\n"
         f"3. LUNGHEZZA OBBLIGATORIA: il dossier deve essere lunghissimo e completo — "
         f"ALMENO {DOSSIER_MIN_WORDS} PAROLE (non caratteri: parole), equivalenti a 8-9 pagine "
-        "PDF. Se un capitolo ti sembra 'finito' troppo presto, e' un segnale che stai "
+        "PDF. Sono 9 gruppi: significa in media almeno 600-700 parole PER OGNI gruppo "
+        "(quello sul percorso delle iterazioni ne vuole di piu', uno per ogni iterazione "
+        "reale). Prima di considerare un capitolo concluso chiediti sempre: 'ho scritto "
+        "almeno 3-4 paragrafi pieni per questo punto, o ho solo elencato le conclusioni?'. "
+        "Se un capitolo ti sembra 'finito' dopo poche righe, e' un segnale che stai "
         "riassumendo invece di raccontare: aggiungi dettagli, esempi numerici, alternative "
-        "scartate, implicazioni. Questo e' l'output piu' importante di tutto il protocollo: "
-        "deve essere preciso al millimetro, mai vago, mai generico.\n\n"
+        "scartate, implicazioni, ipotesi di rischio. NON fermarti finche' non hai coperto "
+        "tutti e 9 i gruppi per esteso: un dossier corto o un capitolo saltato e' un "
+        "fallimento del compito, non un'opzione accettabile. Questo e' l'output piu' "
+        "importante di tutto il protocollo: deve essere preciso al millimetro, mai vago, "
+        "mai generico.\n\n"
         "4. PRECISIONE: ogni numero citato deve essere coerente con le assunzioni e il report "
         "sopra. Non inventare numeri diversi da quelli gia' stabiliti."
     )
