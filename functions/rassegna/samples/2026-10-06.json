@@ -1,0 +1,209 @@
+{
+ "date_label": "martedì 6 ottobre 2026",
+ "intro": "Come una guerra di 19 giorni ha cambiato l'economia per un decennio, perché quasi tutti accettano la controfferta e cosa cambia nell'AI questa settimana.",
+ "excluded_note": "Escluse oggi: 1 mail commerciale di Foundr e 2 newsletter LinkedIn diverse da The Daily Signal. Nessuna nuova uscita nelle ultime 24 ore da Starting Finance, Chapeau Project, Ruben Hassid, Blackbox o Verba Manent.",
+ "stories": [
+  {
+   "category": "economia",
+   "source": "Il Punto",
+   "read_min": 5,
+   "title": "Quando il petrolio è diventato un'**arma**",
+   "image": null,
+   "dek": "Il 6 ottobre 1973 Egitto e Siria attaccano Israele nel giorno dello Yom Kippur. La guerra dura diciannove giorni, ma la decisione dei Paesi arabi di usare il petrolio come leva contro l'Occidente cambia l'economia mondiale per un decennio.",
+   "body": [
+    "## Dall'embargo alla stagflazione",
+    "In pochi giorni i produttori arabi alzano del **70%** il prezzo ufficiale del greggio, tagliano la produzione del 5% e mettono l'embargo sulle esportazioni verso gli Stati Uniti. Entro fine anno spariscono dal mercato circa **4 milioni di barili al giorno** e il prezzo passa da circa $3 a oltre **$11 al barile**.",
+    {
+     "src": "https://media.beehiiv.com/cdn-cgi/image/fit=scale-down,format=auto,onerror=redirect,quality=80,width=1920,height=3840/uploads/asset/file/543b7ed8-ec64-4260-9e60-84215bf69764/magnific__upscale-img1-in-4k__42377.png?t=1791187646",
+     "alt": "Code ai distributori negli anni Settanta",
+     "caption": "Code ai distributori, limiti di velocità e in Italia le \"domeniche a piedi\"."
+    },
+    "Il rincaro si scarica su trasporti, produzione e infine sui prezzi al consumo. Negli USA l'inflazione sale dal 3,2% del 1972 a oltre l'11% nel 1974, in Italia supera il 17%. Mentre l'economia rallenta e cresce la disoccupazione, nasce la parola simbolo del decennio: **stagflazione**.",
+    "## Il secondo shock e la risposta di Volcker",
+    "Nel 1979 la rivoluzione iraniana fa crollare la produzione del Paese da quasi 6 milioni di barili al giorno a meno di uno. Il petrolio passa da $15 a quasi $40. Per spezzare la spirale dei prezzi la Federal Reserve di Paul Volcker porta i tassi fino al **20%**: arriva la recessione, ma l'inflazione cede.",
+    {
+     "src": "https://media.beehiiv.com/cdn-cgi/image/fit=scale-down,format=auto,onerror=redirect,quality=80,width=1920,height=3840/uploads/asset/file/bd403358-e81f-4318-9ed9-e6ee5463c548/image.png?t=1791188287",
+     "alt": "Diversificazione energetica dell'Occidente"
+    },
+    "Da allora l'Occidente ha diversificato: Alaska e fracking negli USA, Mare del Nord e nucleare in Europa. Ma tre fattori restano: la domanda non può crollare in fretta, l'offerta impiega anni a crescere e le riserve sono concentrate in aree instabili."
+   ],
+   "points": [
+    "Quando una risorsa indispensabile è controllata da pochi, il prezzo dipende dalla geopolitica oltre che dal mercato.",
+    "Gli shock energetici diventano inflazione in tre passaggi: trasporti, produzione, consumatori.",
+    "La cura dell'inflazione anni '70 è stata una stretta durissima sui tassi, con recessione inclusa."
+   ],
+   "why": "Gli attacchi degli Houthi agli impianti Aramco di questi giorni sono lo stesso film in piccolo. Conoscere il copione del 1973 ti aiuta a prevedere cosa fanno inflazione, tassi e borse quando il petrolio sale.",
+   "url": "https://ilpunto.beehiiv.com/p/marted-95de",
+   "url_label": "Leggi su Il Punto"
+  },
+  {
+   "category": "economia",
+   "source": "Il Punto",
+   "read_min": 3,
+   "title": "Gli Stati Uniti stanno diventando **come l'Italia**?",
+   "image": {
+    "src": "https://media.beehiiv.com/cdn-cgi/image/fit=scale-down,format=auto,onerror=redirect,quality=80,width=1920,height=3840/uploads/asset/file/e99e861e-c262-441a-9e9d-23440ab5e40f/image.png?t=1791193289",
+    "alt": "Indice di percezione della corruzione: Stati Uniti e Italia",
+    "caption": "Indice di Transparency International: USA a 64/100, minimo storico. Italia a 53."
+   },
+   "dek": "Secondo Rana Foroohar del Financial Times, gli USA mostrano tre sintomi che l'Italia conosce bene: corruzione percepita in crescita, democrazia in arretramento e un mercato del lavoro che chiude la porta ai giovani.",
+   "body": [
+    "Nel 2006 il 60% degli americani pensava che la corruzione nel governo fosse diffusa, oggi l'**89%**. Entrambi i Paesi hanno allentato i controlli: l'Italia ha cancellato l'abuso d'ufficio, Washington ha indebolito la legge contro le tangenti all'estero.",
+    "Tra i 20 e i 24 anni la disoccupazione USA è al **7,1%**, il doppio di chi ha 25-54 anni. In Italia la disoccupazione giovanile è intorno al 20%. La struttura è la stessa: chi ha già un posto se lo tiene, chi entra resta fuori, e conta sempre di più la famiglia da cui parti."
+   ],
+   "points": [
+    "Il circolo vizioso: giovani bloccati, sfiducia, populismo, istituzioni deboli, crescita lenta.",
+    "Per l'Italia è un ciclo già visto, per gli USA è una novità che mette in crisi il sogno americano."
+   ],
+   "why": "È una chiave per leggere la politica economica americana dei prossimi anni, e un promemoria: in Italia la partita si gioca entrando presto nei settori che crescono.",
+   "url": "https://ilpunto.beehiiv.com/p/marted-95de",
+   "url_label": "Leggi su Il Punto"
+  },
+  {
+   "category": "startup",
+   "source": "Cosa Sposta",
+   "read_min": 6,
+   "title": "Perché si **cambia lavoro**, secondo un headhunter",
+   "dek": "Dopo dieci anni l'autore ha venduto le sue quote di Belka per dedicarsi solo a Cosa Sposta. Prima di farlo è andato da Riccardo Spada, oggi volto di The Bull e per quattordici anni headhunter, a chiedere come si capisce se si sta andando via per il motivo giusto.",
+   "body": [
+    "## Nove volte su dieci vince la controfferta",
+    "Il copione è sempre lo stesso. Fai buoni colloqui, ricevi l'offerta, vai a dimetterti e il capo tira fuori \"un progetto nuovo\" e un aumento \"che di solito non diamo\". Spada lo diceva in anticipo ai candidati, che giuravano di non cascarci. Nove volte su dieci succedeva.",
+    "Il motivo: non mentono all'headhunter, mentono a sé stessi. Se basta una sciocchezza per tirarsi indietro il giorno prima di firmare, il motivo per cui avevano iniziato non era mai stato abbastanza forte.",
+    "## Otto motivi, non tre",
+    "Ai junior Spada chiedeva di tirare fuori almeno **otto motivi** da ogni candidato. I primi tre (più soldi, crescita, nuove sfide) li dicono tutti e quindi non significano niente. Per arrivare a quelli veri bisogna scavare, oppure osservare gli incentivi che la persona ha intorno.",
+    "## La controfferta è già a bilancio",
+    "Un'azienda che perde il 20% delle persone ogni anno sa già chi lascerà andare e chi no, e per questi mette i soldi da parte in anticipo. Ma chi accetta spesso ricompare dopo pochi mesi tra i candidati: il motivo vero non era economico.",
+    "I motivi che nessuna controfferta risolve sono due: un capo che non se ne va, perché l'organigramma è finito, e la distanza da casa. Un'ora di macchina in meno vale due ore al giorno."
+   ],
+   "points": [
+    "Stipendio, sfide e crescita l'azienda può rimetterli sul tavolo. Capo e distanza no.",
+    "Spada stesso si è dimesso da manager, con una figlia in arrivo, solo quando The Bull rendeva più dello stipendio.",
+    "La puntata completa dura circa 41 minuti, su YouTube e Spotify."
+   ],
+   "why": "Ti servirà in due ruoli. Da founder, per capire perché una persona vuole davvero restare o andare. Da persona, la domanda da farti è: quello che cerco si può sistemare restando?",
+   "url": "https://cosasposta.substack.com/p/cosa-succede-quando-e-il-momento",
+   "url_label": "Leggi su Cosa Sposta"
+  },
+  {
+   "category": "startup",
+   "source": "Foundr",
+   "translated": true,
+   "read_min": 3,
+   "title": "Il tuo prossimo redesign parte **da una chat**",
+   "image": {
+    "src": "https://hs-22703299.f.hubspotemail.net/hub/22703299/hubfs/Foundr%20Newsletter/Shopify%20Sidekick%20AI%20Canvas%20New%20Release.jpg?width=1120&upscale=true&name=Shopify%20Sidekick%20AI%20Canvas%20New%20Release.jpg",
+    "alt": "Shopify Sidekick Canvas"
+   },
+   "dek": "Il 1° ottobre Shopify ha presentato Canvas: descrivi a Sidekick lo store che vuoi e lui lo costruisce, mostrando il codice dal vivo su diverse dimensioni di schermo. A sei settimane dal Black Friday, Nathan Chan spiega come usarlo senza fare danni.",
+   "body": [
+    "È in accesso anticipato, solo da desktop, e mancano ancora temi di terze parti, blocchi delle app, mercati e traduzioni. Il consiglio: lasciare stare il tema live fino a dicembre, prototipare in Canvas il redesign di gennaio e passarlo al designer come brief."
+   ],
+   "points": [
+    "Adobe prevede **$275,1 miliardi** di vendite online tra novembre e dicembre (+6,7%) e un Cyber Monday record da $15,1 miliardi.",
+    "Il social commerce cresce del 17%, la ricerca a pagamento solo del 4%: buone notizie se vendi con Meta.",
+    "Chi arriva da un assistente AI aggiunge al carrello il **32%** più spesso degli altri visitatori.",
+    "Shopify ora permette resi diversi per collezione o prodotto, per esempio 14 giorni sulla collezione natalizia.",
+    "Muse di Meta per le piccole imprese si collega a Shopify, Stripe e Canva per gestire i task quotidiani (da $20 a $100 al mese)."
+   ],
+   "why": "Il collo di bottiglia si sposta dallo sviluppatore all'idea. Se lanci un e-commerce, scrivi pagine che rispondono a domande in modo chiaro: è quello che premia il traffico che arriva dagli assistenti AI.",
+   "url": "https://mail.google.com/mail/?authuser=leonardopanichella08@gmail.com#all/thread-f:1878219375906688316",
+   "url_label": "Apri la mail originale"
+  },
+  {
+   "category": "tech",
+   "source": "Morning Tech",
+   "read_min": 4,
+   "title": "Il Pentagono **abbandona** Anthropic",
+   "image": {
+    "src": "https://ichef.bbci.co.uk/news/1024/branded_news/c06c/live/0ca3aea0-c0c5-11f1-bc2e-018d645d8d21.jpg",
+    "alt": "Il Pentagono",
+    "caption": "Il dipartimento della Difesa USA ha confermato alla BBC lo stop ai prodotti Anthropic."
+   },
+   "dek": "La rassegna di oggi ha un filo comune: la corsa all'AI sta mettendo sotto pressione sicurezza, regole e rapporti con i governi.",
+   "body": [
+    "## Il Pentagono non usa più Claude",
+    "A febbraio il segretario Pete Hegseth aveva classificato Anthropic come rischio per la catena di fornitura. Ora un funzionario conferma alla BBC che i militari non usano più Claude, anche se secondo diverse fonti era in uso fino alla settimana scorsa, comprese le operazioni contro l'Iran.",
+    "## Il registro danese violato per un mese",
+    "Hacker sono entrati nel CPR, il registro centrale dei cittadini danesi, e hanno sottratto nomi, indirizzi e numeri di previdenza di circa **8 milioni di persone**, inclusi residenti all'estero e defunti. Sono passati dall'accesso legittimo di un'azienda danese.",
+    {
+     "src": "https://techcrunch.com/wp-content/uploads/2026/10/denmark-2267724822.jpg?w=1000",
+     "alt": "Copenaghen"
+    },
+    "## Muse, la falla chiusa nel weekend",
+    "Gli ingegneri di Meta hanno trovato diverse vulnerabilità in Muse a poche settimane dal lancio. Una permetteva a un utente qualsiasi di uscire dalla macchina virtuale e arrivare ai database interni. Il caso è arrivato fino a Zuckerberg."
+   ],
+   "points": [
+    "ChatGPT-6 Astra ha decifrato in sei ore un messaggio cifrato napoleonico di 217 anni, con un solo prompt.",
+    "In Finlandia indagine su un data center Google: abbattuta una foresta di circa 420 campi da calcio prima della valutazione ambientale."
+   ],
+   "why": "Chi costruisce prodotti AI deve mettere a budget sicurezza e rapporti istituzionali dal primo giorno: un cliente governativo si perde in fretta.",
+   "url": "https://mail.google.com/mail/?authuser=leonardopanichella08@gmail.com#all/thread-f:1878271535546244505",
+   "url_label": "Apri Morning Tech"
+  },
+  {
+   "category": "tech",
+   "source": "The Daily Signal",
+   "translated": true,
+   "read_min": 5,
+   "title": "La task force sulla **superintelligenza** e l'AI in locale",
+   "image": {
+    "src": "https://media.licdn.com/dms/image/v2/D4E12AQFggCGm5UqLdQ/article-inline_image-shrink_1000_1488/B4EaEMz5yIH4AI-/0/1791216295621?e=1792627200&v=beta&t=wiSF6dZ3n_5r92sXsXz8r4DK8fkSYPN0YOWz_DuaiHY",
+    "alt": "Schema della Super Intelligence Force"
+   },
+   "dek": "Due edizioni del 5 ottobre: una su politica e infrastruttura dell'AI, una sull'AI che gira direttamente su GPU, tablet e droni.",
+   "body": [
+    "## La Super Intelligence Force",
+    "Trump ha annunciato una task force presieduta da Jay Clayton, con il presidente della FTC Andrew Ferguson tra i vicepresidenti. Ha 120 giorni per un report su rischi e opportunità, con l'obiettivo dichiarato di evitare \"overregulation\". Né questa task force né il patto di sicurezza firmato dalle big tech la stessa settimana contengono regole vincolanti.",
+    "Nella stessa edizione: Google ha sospeso un programma di bug bounty sommerso da segnalazioni generate dall'AI quasi tutte false, e Micron, dopo ricavi record da $54,2 miliardi, avverte che la memoria sarà \"molto più scarsa\" nel 2027-28. Il 75% della produzione 2027 è già venduto.",
+    "## L'AI che gira in locale",
+    {
+     "src": "https://media.licdn.com/dms/image/v2/D4E12AQFQBO9XhK6GMA/article-inline_image-shrink_1000_1488/B4EaEMJvxLKcAI-/0/1791205244589?e=1792627200&v=beta&t=RdvEjA9TZINC-smi2jql1eVsUrU_vA3wi4JrQxL9cU8",
+     "alt": "NVIDIA VSS Blueprint 3.3"
+    },
+    "NVIDIA VSS 3.3 smette di rielaborare le parti di un video che non cambiano: su una sola GPU passa da 13 a 19 telecamere monitorate (+46%). Magnitude dichiara un motore fino a 2 volte più veloce di llama.cpp, e il progetto open source Strata fa girare un modello da 125 miliardi di parametri su una GPU da gaming da 12GB."
+   ],
+   "points": [
+    "Negli USA la politica sull'AI va verso il coordinamento leggero, non verso nuove leggi.",
+    "Memoria e chip diventano il vero vincolo, mentre far girare l'AI in locale costa sempre meno."
+   ],
+   "why": "Ci sono spazi per prodotti che girano sul dispositivo dell'utente: costano meno, funzionano offline e risolvono i problemi di privacy.",
+   "links": [
+    {
+     "url": "https://www.linkedin.com/pulse/daily-signal-trump-creates-super-intelligence-force-steer-varma-phd-yanxe",
+     "label": "Edizione politica"
+    },
+    {
+     "url": "https://www.linkedin.com/pulse/daily-signal-edge-23-saaket-varma-phd-or7ge",
+     "label": "Edizione on-device"
+    }
+   ]
+  },
+  {
+   "category": "tech",
+   "source": "Technicismi",
+   "read_min": 1,
+   "title": "Technicismi: due numeri **dall'archivio**",
+   "dek": "Queste due uscite sembrano numeri del 2020 ripubblicati: parlano di lockdown, dell'halving di Bitcoin di allora e del figlio di Musk appena nato. Le notizie non sono attuali.",
+   "points": [
+    "Spotify Together, NASA che affida a Blue Origin, SpaceX e Dynetics il ritorno sulla Luna, Trolls lanciato direttamente in streaming.",
+    "Netflix all'11% del traffico Internet mondiale e YouTube al 15%."
+   ],
+   "why": "Poco, per ora. Se le prossime uscite saranno ancora d'archivio, conviene toglierla dalla rassegna.",
+   "links": [
+    {
+     "url": "https://technicismi.substack.com/p/technicismi-7",
+     "label": "Leggi #7"
+    },
+    {
+     "url": "https://technicismi.substack.com/p/technicismi-6",
+     "label": "Leggi #6"
+    }
+   ]
+  }
+ ],
+ "headline": "Dal petrolio del '73 al **Pentagono**.",
+ "hero": {
+  "src": "https://media.beehiiv.com/cdn-cgi/image/fit=scale-down,format=auto,onerror=redirect,quality=80,width=1920,height=3840/uploads/asset/file/917b676f-318e-4b10-98bb-540c593736ef/V1.png?t=1791187774",
+  "alt": "Copertina del giorno: la crisi petrolifera del 1973"
+ }
+}
