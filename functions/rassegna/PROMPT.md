@@ -69,7 +69,9 @@ Scrivi i dati in `/tmp/rassegna/rassegna.json` con questo schema:
 ```json
 {
   "date_label": "martedì 6 ottobre 2026",
+  "headline": "Titolo del giorno, max 8 parole, con UNA parola chiave in **grassetto**",
   "intro": "1-2 frasi che collegano i temi del giorno",
+  "hero": {"src": "https://...", "alt": "..."},
   "excluded_note": "Cosa è stato escluso e quali fonti non hanno avuto uscite",
   "stories": [
     {
@@ -90,6 +92,14 @@ Scrivi i dati in `/tmp/rassegna/rassegna.json` con questo schema:
 }
 ```
 
+- `headline`: il titolo grande nella testata azzurra, sul tema principale del giorno
+  (es. "Dal petrolio del '73 al **Pentagono**.").
+- `hero`: l'**immagine rappresentativa della giornata**, obbligatoria se c'è almeno
+  un'immagine editoriale. Scegli la più forte e orizzontale della notizia principale
+  (copertina, foto o illustrazione, mai un grafico pieno di testo). Se la usi come hero,
+  non ripeterla come `image` dello stesso articolo.
+- Nei `title` degli articoli metti in **grassetto** una o due parole chiave: lo stile della
+  mail è "titolo leggero con parola forte".
 - `category`: economia (Il Punto, Starting Finance, Ragionamenti Finanziari), startup (Cosa
   Sposta, Foundr, Chapeau Project), tech (Morning Tech, Technicismi, Ruben Hassid, The Daily
   Signal), chora (Blackbox, Verba Manent). Mantieni questo ordine.
@@ -108,7 +118,7 @@ Non modificare l'HTML a mano.
 
 Usa il connettore Gmail `send_message`:
 - a: leonardopanichella08@gmail.com
-- oggetto: `Rassegna di <giorno> <data> · <N> letture`
+- oggetto: `La Rassegna · <giorno> <data> · <headline senza grassetto>`
 - `htmlBody`: il contenuto esatto di `/tmp/rassegna/email.html`
 - `body`: il contenuto di `/tmp/rassegna/email.txt`
 

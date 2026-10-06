@@ -3,10 +3,11 @@
 Uso:  python3 render.py rassegna.json [cartella_output]
 Scrive email.html e email.txt (default: /tmp/rassegna/).
 
-Layout a tabelle con un unico blocco <style> a classi: Gmail (web e app, su
-account Gmail) supporta gli stili nell'<head>, e così l'HTML resta leggero
-da passare a send_message. Niente variabili CSS: Gmail non le supporta.
-Schema del JSON: vedi PROMPT.md.
+Stile: newsletter "lifestyle" (cielo azzurro sfumato, titoli grandi e leggeri con
+una parola in grassetto, immagini a tutta larghezza, schede bianche arrotondate su
+fasce colorate, pulsanti a pillola). Layout a tabelle con un blocco <style> a classi:
+Gmail (web e app, su account Gmail) lo supporta. Niente variabili CSS né margini
+negativi, che Gmail scarta. Schema del JSON: vedi PROMPT.md.
 """
 import html
 import json
@@ -14,9 +15,10 @@ import os
 import re
 import sys
 
-# Colonna unica da 600px: testata scura, indice, poi una scheda per articolo.
+# Colonna da 600px. Testata a cielo con copertina del giorno, poi indice su fondo
+# chiaro, poi una fascia colorata per articolo con immagine e scheda bianca.
 CATEGORIES = {
-    # chiave: (etichetta, classe colore)
+    # chiave: (etichetta, classe)
     "economia": ("Economia", "eco"),
     "startup": ("Startup & Business", "stu"),
     "tech": ("Tech & AI", "tec"),
@@ -24,47 +26,64 @@ CATEGORIES = {
 }
 
 CSS = """
-body{margin:0;padding:0;background:#ECEFF3}
+body{margin:0;padding:0;background:#DDE7F1}
 table{border-collapse:collapse}
-td{font-family:-apple-system,Roboto,Helvetica,Arial,sans-serif;color:#141B26}
-.wrap{background:#ECEFF3}
-.page{width:100%;max-width:600px;background:#FFFFFF;border-radius:10px}
-.mast{background:#141B26;padding:30px 24px 28px;border-radius:10px 10px 0 0}
-.eyebrow{margin:0 0 14px;font-size:11px;line-height:1;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8FA3BC}
-.hello{margin:0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-0.8px;color:#FFFFFF}
-.sub{margin:10px 0 0;font-size:15px;line-height:1.4;color:#8FA3BC}
-.intro{margin:16px 0 0;font-family:Charter,Georgia,serif;font-size:17px;line-height:1.55;color:#C9D2DE}
-.sec{padding:26px 24px 30px}
-.label{margin:0 0 6px;font-size:12px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#141B26}
-.ix-n{padding:10px 0;font-size:13px;line-height:1.4;font-weight:700;width:30px}
-.ix-t{padding:10px 0;border-bottom:1px solid #E1E6EC}
-.ix-h{font-size:15px;line-height:1.4;font-weight:600;color:#141B26}
-.ix-s{font-size:13px;line-height:1.5;color:#5E6A7A}
-.ix-m{padding:10px 0 10px 8px;border-bottom:1px solid #E1E6EC;font-size:13px;line-height:1.4;color:#5E6A7A;width:40px}
-.story{padding:34px 24px;border-top:1px solid #E1E6EC}
-.kick{padding:0 0 10px;font-size:11px;line-height:1;font-weight:700;letter-spacing:1.4px;text-transform:uppercase}
-.title{padding:0 0 8px;font-size:24px;line-height:1.22;font-weight:700;letter-spacing:-0.3px;color:#141B26}
-.meta{padding:0 0 18px;font-size:13px;line-height:1.4;color:#5E6A7A}
-.img{padding:4px 0 18px}
-.img img{display:block;width:100%;max-width:552px;height:auto;border:0;border-radius:6px;background:#E1E6EC}
-.cap{margin:8px 0 0;font-size:13px;line-height:1.45;color:#5E6A7A}
-.dek{padding:0 0 14px;font-family:Charter,Georgia,serif;font-size:19px;line-height:1.55;color:#141B26}
-.p{padding:0 0 14px;font-family:Charter,Georgia,serif;font-size:17px;line-height:1.62;color:#2A3340}
-.h3{padding:10px 0 8px;font-size:18px;line-height:1.3;font-weight:700;color:#141B26}
-.pts{padding:8px 0}
-.dot{padding:0 0 10px;font-size:17px;line-height:1.55;font-weight:700;width:22px}
-.pt{padding:0 0 10px;font-size:16px;line-height:1.55;color:#2A3340}
-.why{border-radius:6px;padding:16px 18px}
-.why-l{margin:0 0 6px;font-size:12px;line-height:1;font-weight:700;letter-spacing:1.2px;text-transform:uppercase}
-.why-t{margin:0;font-size:16px;line-height:1.55;color:#141B26}
-.btn{display:inline-block;margin:0 6px 8px 0;padding:11px 18px;border:1.5px solid;border-radius:6px;font-size:14px;line-height:1;font-weight:600;text-decoration:none}
-.foot{padding:22px 24px 26px;border-top:1px solid #E1E6EC;font-size:13px;line-height:1.55;color:#5E6A7A}
-.eco{color:#0E7A5A;border-color:#0E7A5A}.eco-bg{background:#E8F4EF}
-.stu{color:#2847C9;border-color:#2847C9}.stu-bg{background:#ECEFFC}
-.tec{color:#7339C6;border-color:#7339C6}.tec-bg{background:#F2ECFB}
-.cho{color:#B4440F;border-color:#B4440F}.cho-bg{background:#FBEFE8}
-strong{color:#141B26}
-@media (max-width:480px){.hello{font-size:30px}.title{font-size:22px}.story,.sec,.mast,.foot{padding-left:20px;padding-right:20px}}
+td{font-family:-apple-system,'SF Pro Display','Helvetica Neue',Roboto,Arial,sans-serif;color:#16202C}
+.wrap{background:#DDE7F1;background-image:linear-gradient(180deg,#C9DAEA 0%,#E8EEF4 60%,#F1F3F5 100%)}
+.page{width:100%;max-width:600px;background:#FFFFFF;border-radius:18px;overflow:hidden}
+.sky{background:#8DB1D6;background-image:linear-gradient(180deg,#6F9CC9 0%,#9DBFDF 55%,#CFE0EF 100%);text-align:center}
+.brand{padding:26px 28px 0;font-size:12px;line-height:1;font-weight:600;letter-spacing:3.5px;text-transform:uppercase;color:#FFFFFF}
+.date{padding:8px 28px 0;font-size:12px;line-height:1;letter-spacing:1.5px;text-transform:uppercase;color:#E7F0F8}
+.hl{padding:30px 30px 0;font-size:40px;line-height:1.08;font-weight:300;letter-spacing:-1.2px;color:#FFFFFF}
+.hl strong{font-weight:700;color:#FFFFFF}
+.lede{padding:16px 44px 0;font-size:16px;line-height:1.5;color:#F2F7FC}
+.stat{padding:22px 28px 26px}
+.pill{display:inline-block;padding:9px 18px;border-radius:999px;background:#FFFFFF;font-size:12px;line-height:1;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#34618F;text-decoration:none}
+.hero img{display:block;width:100%;max-width:600px;height:auto;border:0}
+.hcap{padding:10px 28px 0;font-size:12px;line-height:1.4;color:#6B7A8A;text-align:center}
+.ix{padding:40px 28px 34px;text-align:center}
+.h2{margin:0;font-size:30px;line-height:1.12;font-weight:300;letter-spacing:-0.8px;color:#16202C}
+.h2 strong{font-weight:700}
+.ixl{padding:22px 0 0}
+.ixr{padding:15px 0;border-bottom:1px solid #E4E9EF;text-align:left}
+.ixn{padding:15px 14px 15px 0;border-bottom:1px solid #E4E9EF;font-size:12px;line-height:1.5;font-weight:700;letter-spacing:1px;width:26px;vertical-align:top}
+.ixh{font-size:16px;line-height:1.35;font-weight:600;color:#16202C}
+.ixs{font-size:12px;line-height:1.6;letter-spacing:0.6px;text-transform:uppercase;color:#7A8796}
+.ixm{padding:15px 0 15px 10px;border-bottom:1px solid #E4E9EF;font-size:13px;line-height:1.5;color:#7A8796;width:36px;text-align:right;vertical-align:top}
+.band{padding:44px 16px 40px}
+.head{padding:0 18px 22px;text-align:center}
+.kick{margin:0 0 12px;font-size:11px;line-height:1;font-weight:700;letter-spacing:2.6px;text-transform:uppercase}
+.title{margin:0;font-size:31px;line-height:1.12;font-weight:300;letter-spacing:-0.8px;color:#16202C}
+.title strong{font-weight:700}
+.src{margin:12px 0 0;font-size:12px;line-height:1.4;letter-spacing:1px;text-transform:uppercase;color:#6B7A8A}
+.cover img{display:block;width:100%;max-width:568px;height:auto;border:0;border-radius:16px}
+.card{background:#FFFFFF;border-radius:16px;padding:28px 24px 26px}
+.dek{padding:0 0 18px;font-size:19px;line-height:1.5;font-weight:400;color:#16202C}
+.h3{padding:12px 0 10px;font-size:13px;line-height:1.3;font-weight:700;letter-spacing:1.6px;text-transform:uppercase}
+.rule{border-top:1px solid #DCE3EA;padding:0 0 6px}
+.p{padding:0 0 15px;font-family:Charter,Georgia,serif;font-size:17px;line-height:1.65;color:#2B3542}
+.p strong{font-family:-apple-system,'Helvetica Neue',Roboto,Arial,sans-serif;font-weight:700;color:#16202C}
+.img{padding:6px 0 20px}
+.img img{display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:12px}
+.cap{margin:8px 0 0;font-size:13px;line-height:1.45;color:#6B7A8A}
+.pth{padding:14px 0 4px;font-size:13px;line-height:1.3;font-weight:700;letter-spacing:1.6px;text-transform:uppercase}
+.pt{padding:12px 0;border-bottom:1px solid #E4E9EF;font-size:16px;line-height:1.5;color:#2B3542}
+.pt strong{color:#16202C}
+.why{padding:22px 0 0}
+.whyb{border-radius:14px;padding:20px 20px}
+.whyl{margin:0 0 8px;font-size:11px;line-height:1;font-weight:700;letter-spacing:2.2px;text-transform:uppercase}
+.whyt{margin:0;font-size:16px;line-height:1.55;color:#16202C}
+.cta{padding:28px 0 0;text-align:center}
+.btn{display:inline-block;margin:0 4px 10px;padding:14px 26px;border-radius:999px;font-size:12px;line-height:1;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#FFFFFF;text-decoration:none}
+.foot{background:#16202C;padding:34px 30px 38px;text-align:center}
+.fh{margin:0 0 10px;font-size:22px;line-height:1.2;font-weight:300;color:#FFFFFF}
+.fh strong{font-weight:700}
+.ft{margin:0;font-size:13px;line-height:1.6;color:#A9B6C4}
+.eco-bg{background:#E3ECE5}.eco{color:#2E5E47}.eco-btn{background:#2E5E47}.eco-why{background:#F1F6F2}
+.stu-bg{background:#E1EAF4}.stu{color:#2F5E8E}.stu-btn{background:#2F5E8E}.stu-why{background:#EFF4FA}
+.tec-bg{background:#EAE6E1}.tec{color:#4B5A73}.tec-btn{background:#4B5A73}.tec-why{background:#F5F2EE}
+.cho-bg{background:#EFE3DA}.cho{color:#9A5636}.cho-btn{background:#9A5636}.cho-why{background:#F8F0EA}
+@media (max-width:480px){.hl{font-size:34px;padding-left:22px;padding-right:22px}.lede{padding-left:24px;padding-right:24px}.title{font-size:27px}.h2{font-size:26px}.band{padding-left:10px;padding-right:10px}.card{padding:24px 18px 22px}.ix{padding-left:20px;padding-right:20px}}
 """
 
 
@@ -88,15 +107,24 @@ def cat(s):
     return CATEGORIES.get(s.get("category"), CATEGORIES["tech"])
 
 
-def tr(cls, inner):
-    return f'<tr><td class="{cls}">{inner}</td></tr>'
+def tr(cls, inner, extra=""):
+    return f'<tr><td class="{cls}"{extra}>{inner}</td></tr>'
+
+
+def table(rows, cls=""):
+    c = f' class="{cls}"' if cls else ""
+    return f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"{c}>{"".join(rows)}</table>'
+
+
+def img_tag(img, width):
+    return f'<img src="{attr(img["src"])}" alt="{attr(img.get("alt") or img.get("caption"))}" width="{width}">'
 
 
 def image_block(img):
     if not img or not img.get("src"):
         return ""
     cap = f'<p class="cap">{esc(img["caption"])}</p>' if img.get("caption") else ""
-    return tr("img", f'<img src="{attr(img["src"])}" alt="{attr(img.get("alt") or img.get("caption"))}" width="552">{cap}')
+    return tr("img", img_tag(img, 520) + cap)
 
 
 def story_block(i, s):
@@ -105,45 +133,47 @@ def story_block(i, s):
     if s.get("translated"):
         meta.append("tradotto dall'inglese")
     if s.get("read_min"):
-        meta.append(f'{int(s["read_min"])} min di lettura')
+        meta.append(f'{int(s["read_min"])} min')
 
-    rows = [
-        tr(f"kick {c}", f"{i:02d}&nbsp; {label}"),
-        tr("title", esc(s.get("title"))),
-        tr("meta", " &nbsp;·&nbsp; ".join(meta)),
-        image_block(s.get("image")),
-    ]
+    head = tr(
+        "head",
+        f'<p class="kick {c}">{i:02d} &nbsp;·&nbsp; {label}</p>'
+        f'<p class="title">{esc(s.get("title"))}</p>'
+        f'<p class="src">{" &nbsp;·&nbsp; ".join(meta)}</p>',
+    )
+    rows = [head]
+    if s.get("image") and s["image"].get("src"):
+        cap = f'<p class="cap" style="text-align:center">{esc(s["image"]["caption"])}</p>' if s["image"].get("caption") else ""
+        rows.append(tr("cover", img_tag(s["image"], 568) + cap, ' style="padding:0 0 14px"'))
+
+    card = []
     if s.get("dek"):
-        rows.append(tr("dek", esc(s["dek"])))
+        card.append(tr("dek", esc(s["dek"])))
     for para in s.get("body") or []:
         if isinstance(para, dict):  # immagine nel punto esatto del testo
-            rows.append(image_block(para))
+            card.append(image_block(para))
         elif para.startswith("## "):  # sottotitolo di sezione
-            rows.append(tr("h3", esc(para[3:])))
+            card.append(tr("rule", ""))
+            card.append(tr(f"h3 {c}", esc(para[3:])))
         else:
-            rows.append(tr("p", esc(para)))
+            card.append(tr("p", esc(para)))
     for img in s.get("images") or []:
-        rows.append(image_block(img))
-
+        card.append(image_block(img))
     if s.get("points"):
-        li = "".join(
-            f'<tr><td valign="top" class="dot {c}">&#8226;</td><td class="pt">{esc(p)}</td></tr>' for p in s["points"]
-        )
-        rows.append('<tr><td class="label" style="padding-top:4px">Punti chiave</td></tr>')
-        rows.append(tr("pts", f'<table role="presentation" width="100%">{li}</table>'))
+        card.append(tr(f"pth {c}", "Punti chiave"))
+        card += [tr("pt", esc(p)) for p in s["points"]]
     if s.get("why"):
-        rows.append(
-            tr("", f'<table role="presentation" width="100%" style="margin-top:10px"><tr><td class="why {c}-bg">'
-                   f'<p class="why-l {c}">Perché ti interessa</p><p class="why-t">{esc(s["why"])}</p></td></tr></table>')
-        )
+        card.append(tr("why", table([tr(f"whyb {c}-why",
+            f'<p class="whyl {c}">Perché ti interessa</p><p class="whyt">{esc(s["why"])}</p>')])))
     links = s.get("links") or ([{"url": s["url"], "label": s.get("url_label")}] if s.get("url") else [])
     if links:
         btns = "".join(
-            f'<a class="btn {c}" href="{attr(l["url"])}">{esc(l.get("label") or "Leggi l’originale")} &rarr;</a>'
+            f'<a class="btn {c}-btn" href="{attr(l["url"])}">{esc(l.get("label") or "Leggi l’originale")} &rarr;</a>'
             for l in links
         )
-        rows.append(f'<tr><td style="padding-top:18px">{btns}</td></tr>')
-    return tr("story", f'<table role="presentation" width="100%">{"".join(rows)}</table>')
+        card.append(tr("cta", btns))
+    rows.append(tr("card", table(card)))
+    return tr(f"band {c}-bg", table(rows))
 
 
 def index_block(stories):
@@ -152,50 +182,67 @@ def index_block(stories):
         label, c = cat(s)
         mins = f'{int(s["read_min"])}&#8242;' if s.get("read_min") else ""
         rows.append(
-            f'<tr><td valign="top" class="ix-n {c}">{i:02d}</td>'
-            f'<td class="ix-t"><span class="ix-h">{esc(s.get("title"))}</span><br>'
-            f'<span class="ix-s">{esc(s.get("source"))} · {label}</span></td>'
-            f'<td valign="top" align="right" class="ix-m">{mins}</td></tr>'
+            f'<tr><td class="ixn {c}">{i:02d}</td>'
+            f'<td class="ixr"><span class="ixh">{esc(plain(s.get("title")))}</span><br>'
+            f'<span class="ixs">{esc(s.get("source"))} · {label}</span></td>'
+            f'<td class="ixm">{mins}</td></tr>'
         )
-    return tr("sec", f'<p class="label">In questo numero</p><table role="presentation" width="100%">{"".join(rows)}</table>')
+    return tr("ix", f'<p class="h2">Oggi nella <strong>rassegna</strong></p>'
+                    f'{table([tr("ixl", table(rows))])}')
 
 
 def render_html(d):
     stories = d.get("stories") or []
     total = sum(int(s.get("read_min") or 0) for s in stories)
-    sub = f"{len(stories)} letture · {total} minuti" if stories else "Nessuna nuova uscita"
-    preheader = d.get("preheader") or " · ".join(s.get("title", "") for s in stories[:3])
-    intro = f'<p class="intro">{esc(d["intro"])}</p>' if d.get("intro") else ""
-    head = tr(
-        "mast",
-        f'<p class="eyebrow">{esc(d.get("date_label"))}</p><p class="hello">Buongiorno, Leonardo.</p>'
-        f'<p class="sub">{sub}</p>{intro}',
-    )
+    stat = f"{len(stories)} letture &nbsp;·&nbsp; {total} minuti" if stories else "Nessuna nuova uscita"
+    preheader = d.get("preheader") or d.get("intro") or " · ".join(plain(s.get("title", "")) for s in stories[:3])
+    headline = d.get("headline") or "Le idee che contano, **stamattina**."
+
+    sky = [
+        tr("brand", "La Rassegna"),
+        tr("date", esc(d.get("date_label"))),
+        tr("hl", esc(headline)),
+    ]
+    if d.get("intro"):
+        sky.append(tr("lede", esc(d["intro"])))
+    sky.append(tr("stat", f'<span class="pill">{stat}</span>'))
+    hero = d.get("hero")
+    if hero and hero.get("src"):
+        sky.append(tr("hero", img_tag(hero, 600)))
+    top = tr("sky", table(sky))
+    if hero and hero.get("caption"):
+        top += tr("hcap", esc(hero["caption"]))
+
     if stories:
         body = index_block(stories) + "".join(story_block(i, s) for i, s in enumerate(stories, 1))
     else:
-        body = tr("sec p", "Nelle ultime 24 ore non è arrivata nessuna nuova uscita dalle tue newsletter. Ci sentiamo domani.")
+        body = tr("ix", '<p class="h2">Oggi è tutto <strong>tranquillo</strong>.</p>'
+                        '<p class="whyt" style="padding-top:14px">Nelle ultime 24 ore non è arrivata nessuna '
+                        "nuova uscita dalle tue newsletter. Ci sentiamo domani.</p>")
     note = esc(d.get("excluded_note"))
     foot = tr(
         "foot",
-        f'{note}{"<br><br>" if note else ""}Riassunti scritti da Claude a partire dalle newsletter che ricevi. '
-        "Per cambiare fonti o formato, chiedilo nella sessione della Rassegna.",
+        '<p class="fh">Buona <strong>giornata</strong>, Leonardo.</p>'
+        f'<p class="ft">{note}{"<br><br>" if note else ""}Riassunti scritti da Claude a partire dalle newsletter '
+        "che ricevi. Per cambiare fonti o formato, chiedilo nella sessione della Rassegna.</p>",
     )
     css = re.sub(r"\s*\n\s*", "", CSS)
     return (
         '<!doctype html><html lang="it"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">'
-        f"<title>Rassegna mattutina</title><style>{css}</style></head><body>"
-        f'<div style="display:none;max-height:0;overflow:hidden">{esc(preheader)}</div>'
-        '<table role="presentation" width="100%" class="wrap"><tr><td align="center" style="padding:20px 10px 32px">'
-        f'<table role="presentation" width="600" class="page">{head}{body}{foot}</table>'
+        f"<title>La Rassegna</title><style>{css}</style></head><body>"
+        f'<div style="display:none;max-height:0;overflow:hidden">{esc(plain(preheader))}</div>'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="wrap"><tr><td align="center" style="padding:24px 10px 36px">'
+        f'<table role="presentation" width="600" cellpadding="0" cellspacing="0" class="page">{top}{body}{foot}</table>'
         "</td></tr></table></body></html>"
     )
 
 
 def render_text(d):
-    out = [f"RASSEGNA MATTUTINA · {d.get('date_label','')}", ""]
+    out = [f"LA RASSEGNA · {d.get('date_label','')}", ""]
+    if d.get("headline"):
+        out += [plain(d["headline"]), ""]
     if d.get("intro"):
         out += [plain(d["intro"]), ""]
     stories = d.get("stories") or []
