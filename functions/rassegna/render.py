@@ -1,6 +1,6 @@
 """Genera l'email della Rassegna (HTML + testo semplice) da un file JSON.
 
-Uso:  python3 render.py rassegna.json [cartella_output]
+Uso:  python3 render.py rassegna.json [cartella_output] [--no-images]
 Scrive email.html e email.txt (default: /tmp/rassegna/).
 
 Stile: newsletter "lifestyle" (cielo azzurro sfumato, titoli grandi e leggeri con
@@ -14,6 +14,7 @@ import json
 import os
 import re
 import sys
+from html.parser import HTMLParser
 
 # Colonna da 600px. Testata a cielo con copertina del giorno, poi indice su fondo
 # chiaro, poi una fascia colorata per articolo con immagine e scheda bianca.
@@ -28,13 +29,13 @@ CATEGORIES = {
 CSS = """
 body{margin:0;padding:0;background:#DDE7F1}
 table{border-collapse:collapse}
-td{font-family:-apple-system,'SF Pro Display','Helvetica Neue',Roboto,Arial,sans-serif;color:#16202C}
-.wrap{background:#DDE7F1;background-image:linear-gradient(180deg,#C9DAEA 0%,#E8EEF4 60%,#F1F3F5 100%)}
-.page{width:100%;max-width:600px;background:#FFFFFF;border-radius:18px;overflow:hidden}
-.sky{background:#8DB1D6;background-image:linear-gradient(180deg,#6F9CC9 0%,#9DBFDF 55%,#CFE0EF 100%);text-align:center}
+
+.wrap{background:#DDE7F1;font-family:Helvetica,Arial,sans-serif;color:#16202C}
+.page{font-family:Helvetica,Arial,sans-serif;width:100%;max-width:600px;background:#FFFFFF;border-radius:18px;overflow:hidden}
+.sky{background:#7FA7D0;text-align:center}
 .brand{padding:26px 28px 0;font-size:12px;line-height:1;font-weight:600;letter-spacing:3.5px;text-transform:uppercase;color:#FFFFFF}
 .date{padding:8px 28px 0;font-size:12px;line-height:1;letter-spacing:1.5px;text-transform:uppercase;color:#E7F0F8}
-.hl{padding:30px 30px 0;font-size:40px;line-height:1.08;font-weight:300;letter-spacing:-1.2px;color:#FFFFFF}
+.hl{padding:30px 30px 0;font-size:36px;line-height:1.08;font-weight:300;letter-spacing:-1.2px;color:#FFFFFF}
 .hl strong{font-weight:700;color:#FFFFFF}
 .lede{padding:16px 44px 0;font-size:16px;line-height:1.5;color:#F2F7FC}
 .stat{padding:22px 28px 26px}
@@ -62,7 +63,7 @@ td{font-family:-apple-system,'SF Pro Display','Helvetica Neue',Roboto,Arial,sans
 .h3{padding:12px 0 10px;font-size:13px;line-height:1.3;font-weight:700;letter-spacing:1.6px;text-transform:uppercase}
 .rule{border-top:1px solid #DCE3EA;padding:0 0 6px}
 .p{padding:0 0 15px;font-family:Charter,Georgia,serif;font-size:17px;line-height:1.65;color:#2B3542}
-.p strong{font-family:-apple-system,'Helvetica Neue',Roboto,Arial,sans-serif;font-weight:700;color:#16202C}
+.p strong{font-family:Helvetica,Arial,sans-serif;font-weight:700;color:#16202C}
 .img{padding:6px 0 20px}
 .img img{display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:12px}
 .cap{margin:8px 0 0;font-size:13px;line-height:1.45;color:#6B7A8A}
@@ -85,6 +86,75 @@ td{font-family:-apple-system,'SF Pro Display','Helvetica Neue',Roboto,Arial,sans
 .cho-bg{background:#EFE3DA}.cho{color:#9A5636}.cho-btn{background:#9A5636}.cho-why{background:#F8F0EA}
 @media (max-width:480px){.hl{font-size:34px;padding-left:22px;padding-right:22px}.lede{padding-left:24px;padding-right:24px}.title{font-size:27px}.h2{font-size:26px}.band{padding-left:10px;padding-right:10px}.card{padding:24px 18px 22px}.ix{padding-left:20px;padding-right:20px}}
 """
+
+
+class _Inliner(HTMLParser):
+    """Copia le regole CSS a classi dentro l'attributo style di ogni elemento.
+
+    Il connettore Gmail elimina <style> e gli attributi class: solo lo style
+    inline sopravvive. Supporta selettori `.a` e `.a tag` (discendente).
+    """
+
+    def __init__(self, rules):
+        super().__init__(convert_charrefs=False)
+        self.rules, self.out, self.stack = rules, [], []
+
+    def _style(self, tag, classes):
+        decl = []
+        for sel, body in self.rules:
+            parts = sel.split()
+            if len(parts) == 1 and parts[0] == tag:
+                decl.insert(0, body)
+            elif len(parts) == 1 and parts[0][1:] in classes:
+                decl.append(body)
+            elif len(parts) == 2 and parts[1] == tag and any(parts[0][1:] in c for c in self.stack):
+                decl.append(body)
+        css = ";".join(decl)
+        css = re.sub(r"(^|;)background:", r"\1background-color:", css)
+        return css
+
+    def handle_starttag(self, tag, attrs, closed=False):
+        a = dict(attrs)
+        classes = (a.pop("class", None) or "").split()
+        css = self._style(tag, classes)
+        if css:
+            a["style"] = css + (";" + a["style"] if a.get("style") else "")
+            m = re.findall(r"background-color:(#[0-9A-Fa-f]{6})", css)
+            if m and tag in ("td", "table"):
+                a["bgcolor"] = m[-1]
+        at = "".join(f' {k}="{html.escape(v, quote=True)}"' if v is not None else f" {k}" for k, v in a.items())
+        self.out.append(f"<{tag}{at}{' /' if closed else ''}>")
+        if not closed and tag not in ("img", "br", "meta", "hr"):
+            self.stack.append(set(classes))
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs, closed=True)
+
+    def handle_endtag(self, tag):
+        if self.stack:
+            self.stack.pop()
+        self.out.append(f"</{tag}>")
+
+    def handle_data(self, d):
+        self.out.append(d)
+
+    def handle_entityref(self, n):
+        self.out.append(f"&{n};")
+
+    def handle_charref(self, n):
+        self.out.append(f"&#{n};")
+
+    def handle_decl(self, d):
+        self.out.append(f"<!{d}>")
+
+
+def inline_css(doc):
+    css = re.sub(r"@media[^{]*\{(?:[^{}]*\{[^}]*\})*[^}]*\}", "", CSS)
+    rules = [(sel.strip(), body.strip()) for sel, body in re.findall(r"([^{}]+)\{([^}]*)\}", css)]
+    rules = [(s, b) for s, b in rules if s.startswith(".") or s == "td"]
+    p = _Inliner(rules)
+    p.feed(re.sub(r"<style>.*?</style>", "", doc, flags=re.S))
+    return "".join(p.out)
 
 
 def esc(s):
@@ -120,8 +190,11 @@ def img_tag(img, width):
     return f'<img src="{attr(img["src"])}" alt="{attr(img.get("alt") or img.get("caption"))}" width="{width}">'
 
 
+NO_IMAGES = False  # True quando si invia col connettore Gmail, che toglie le immagini
+
+
 def image_block(img):
-    if not img or not img.get("src"):
+    if NO_IMAGES or not img or not img.get("src"):
         return ""
     cap = f'<p class="cap">{esc(img["caption"])}</p>' if img.get("caption") else ""
     return tr("img", img_tag(img, 520) + cap)
@@ -142,7 +215,7 @@ def story_block(i, s):
         f'<p class="src">{" &nbsp;·&nbsp; ".join(meta)}</p>',
     )
     rows = [head]
-    if s.get("image") and s["image"].get("src"):
+    if not NO_IMAGES and s.get("image") and s["image"].get("src"):
         cap = f'<p class="cap" style="text-align:center">{esc(s["image"]["caption"])}</p>' if s["image"].get("caption") else ""
         rows.append(tr("cover", img_tag(s["image"], 568) + cap, ' style="padding:0 0 14px"'))
 
@@ -206,7 +279,7 @@ def render_html(d):
     if d.get("intro"):
         sky.append(tr("lede", esc(d["intro"])))
     sky.append(tr("stat", f'<span class="pill">{stat}</span>'))
-    hero = d.get("hero")
+    hero = None if NO_IMAGES else d.get("hero")
     if hero and hero.get("src"):
         sky.append(tr("hero", img_tag(hero, 600)))
     top = tr("sky", table(sky))
@@ -270,11 +343,14 @@ def render_text(d):
 
 
 def main():
-    src = sys.argv[1]
-    outdir = sys.argv[2] if len(sys.argv) > 2 else "/tmp/rassegna"
+    global NO_IMAGES
+    args = [a for a in sys.argv[1:] if a != "--no-images"]
+    NO_IMAGES = "--no-images" in sys.argv
+    src = args[0]
+    outdir = args[1] if len(args) > 1 else "/tmp/rassegna"
     os.makedirs(outdir, exist_ok=True)
     d = json.load(open(src, encoding="utf-8"))
-    h = render_html(d)
+    h = inline_css(render_html(d))
     open(os.path.join(outdir, "email.html"), "w", encoding="utf-8").write(h)
     open(os.path.join(outdir, "email.txt"), "w", encoding="utf-8").write(render_text(d))
     print(f"OK email.html {len(h)} caratteri, {len(d.get('stories') or [])} articoli")

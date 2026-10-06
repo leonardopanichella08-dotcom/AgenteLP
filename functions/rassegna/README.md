@@ -19,4 +19,5 @@ Blackbox e Verba Manent (Chora Media).
 
 - `PROMPT.md`: istruzioni della Routine.
 - `extract_images.py`: estrae le immagini editoriali da una mail e segnala quelle sponsorizzate.
-- `render.py`: trasforma il JSON del giorno nell'email HTML (grafica fissa) e nella versione testo.
+- `render.py`: trasforma il JSON del giorno nell'email HTML (stili tutti inline) e nella versione testo. `--no-images` per l'invio col connettore Gmail, che toglie le immagini.
+- `send_resend.py`: invia l'email con le immagini tramite Resend (serve `RESEND_API_KEY` e `api.resend.com` tra i domini consentiti).

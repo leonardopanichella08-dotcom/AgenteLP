@@ -107,23 +107,22 @@ Scrivi i dati in `/tmp/rassegna/rassegna.json` con questo schema:
 - `url`: link all'articolo originale se presente nella mail, altrimenti il viewUrl Gmail.
   Per più link usa `"links": [{"url", "label"}]`.
 
-Poi lancia, dalla radice del repo:
+Poi invia così, dalla radice del repo /home/user/AgenteLP:
 
-    python3 functions/rassegna/render.py /tmp/rassegna/rassegna.json
+1. **Con le immagini (Resend)**: genera e invia
+   `python3 functions/rassegna/render.py /tmp/rassegna/rassegna.json`
+   `python3 functions/rassegna/send_resend.py "La Rassegna · <giorno> <data> · <headline senza grassetto>"`
+   Se stampa `SENT`, hai finito.
+2. **Senza immagini (connettore Gmail)**: se lo script esce con `MISSING_RESEND_API_KEY`
+   o `FAILED`, rigenera senza immagini (il connettore Gmail elimina tutte le `<img>`,
+   il blocco `<style>` e le classi; gli stili inline invece restano):
+   `python3 functions/rassegna/render.py /tmp/rassegna/rassegna.json --no-images`
+   poi usa il connettore Gmail `send_message` a leonardopanichella08@gmail.com con lo
+   stesso oggetto, `htmlBody` = contenuto esatto di `/tmp/rassegna/email.html` e
+   `body` = contenuto di `/tmp/rassegna/email.txt`.
 
-Genera `/tmp/rassegna/email.html` e `email.txt` con la grafica fissa della Rassegna.
-Non modificare l'HTML a mano.
-
-## 4. Invia
-
-Usa il connettore Gmail `send_message`:
-- a: leonardopanichella08@gmail.com
-- oggetto: `La Rassegna · <giorno> <data> · <headline senza grassetto>`
-- `htmlBody`: il contenuto esatto di `/tmp/rassegna/email.html`
-- `body`: il contenuto di `/tmp/rassegna/email.txt`
-
-Se non c'è nessuna newsletter nuova, genera comunque l'email con `"stories": []` e
-oggetto `Rassegna di <giorno> <data> · nessuna novità`.
+Non modificare l'HTML a mano. Se non c'è nessuna newsletter nuova, genera comunque
+l'email con `"stories": []` e oggetto `La Rassegna · <giorno> <data> · nessuna novità`.
 
 Non modificare, archiviare o eliminare nessuna mail. Non scrivere a nessun altro.
 Alla fine scrivi in chat una riga con l'esito (quante newsletter, email inviata o errore).
