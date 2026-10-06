@@ -113,8 +113,7 @@ Poi invia così, dalla radice del repo /home/user/AgenteLP:
    `python3 functions/rassegna/render.py /tmp/rassegna/rassegna.json`
    `python3 functions/rassegna/send_resend.py "La Rassegna · <giorno> <data> · <headline senza grassetto>"`
    Se stampa `SENT`, hai finito.
-2. **Senza immagini (connettore Gmail)**: se lo script esce con `MISSING_RESEND_API_KEY`
-   o `FAILED`, rigenera senza immagini (il connettore Gmail elimina tutte le `<img>`,
+2. **Senza immagini (connettore Gmail)**: se lo script stampa `FAILED`, rigenera senza immagini (il connettore Gmail elimina tutte le `<img>`,
    il blocco `<style>` e le classi; gli stili inline invece restano):
    `python3 functions/rassegna/render.py /tmp/rassegna/rassegna.json --no-images`
    poi usa il connettore Gmail `send_message` a leonardopanichella08@gmail.com con lo
