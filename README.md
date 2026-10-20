@@ -9,6 +9,7 @@ agente specializzato con la propria architettura.
 | Funzione | Stato | Cosa fa | Cartella |
 |---|---|---|---|
 | **LUKA** | attiva (v0.1) | Analisi profili LinkedIn, discovery post virali di nicchia, generazione di commenti/repost ad alto impatto, esecuzione assistita via deep-link | [`functions/luka/`](functions/luka/) |
+| **AULA ARENA** | attiva (v1.0) | Mini Web-FPS 3D cartoon per smartphone (React Three Fiber): 7 compagni di classe, loadout, superpoteri, evento "Interrogazione a Sorpresa" | [`games/aula-arena/`](games/aula-arena/) |
 | **ANDREA** | pianificata | Ex "Architetto Gestionale": parsing Excel, simulazioni what-if, metriche e spiegazioni AI. Verrà migrata qui con tutta la sua memoria e i processi locali. | `functions/andrea/` (da creare) |
 
 Le funzioni **non condividono logica di dominio** tra loro: condividono solo

@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Viewport tassativamente fisso: niente scroll, niente pull-to-refresh, niente zoom. */
+html,
+body,
+#root {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
+}
+
+body {
+  background: #1b1f3b;
+  color: #fff;
+  font-family: ui-rounded, 'Arial Rounded MT Bold', 'Trebuchet MS', system-ui, sans-serif;
+}
+
+canvas {
+  display: block;
+  outline: none;
+}
+
+/* Unico punto in cui è ammesso lo scroll: pannelli interni della lobby */
+.scroll-y {
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-x {
+  overflow-x: auto;
+  touch-action: pan-x;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.scroll-x::-webkit-scrollbar,
+.scroll-y::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-l { padding-left: max(14px, env(safe-area-inset-left)); }
+.safe-r { padding-right: max(14px, env(safe-area-inset-right)); }
+.safe-t { padding-top: max(10px, env(safe-area-inset-top)); }
+.safe-b { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+
+.btn-touch {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: transform 60ms ease-out, filter 60ms;
+}
+.btn-touch:active,
+.btn-touch.pressed {
+  transform: scale(0.93);
+  filter: brightness(1.15);
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 207, 90, 0.7); }
+  50% { box-shadow: 0 0 0 10px rgba(255, 207, 90, 0); }
+}
+.ready-pulse { animation: pulse-ring 0.9s infinite; }
+
+@keyframes alert-flash {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(1.04); }
+}
+.alert-flash { animation: alert-flash 0.5s infinite; }
+
+@keyframes pop-in {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.pop-in { animation: pop-in 0.25s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+
+@keyframes slide-up {
+  from { transform: translateY(14px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.slide-up { animation: slide-up 0.3s ease-out both; }
+
+/* Suggerimento rotazione: solo telefoni in verticale durante la partita */
+.rotate-hint { display: none; }
+@media (orientation: portrait) and (pointer: coarse) {
+  .rotate-hint { display: flex; }
+}
+
+/* Lobby: lista roster orizzontale di default, verticale su telefono in orizzontale */
+.lb-roster-list { display: flex; gap: 8px; overflow-x: auto; touch-action: pan-x; overscroll-behavior: contain; scrollbar-width: none; padding-bottom: 4px; }
+.lb-roster-list::-webkit-scrollbar { display: none; }
+@media (orientation: landscape) and (max-height: 520px) {
+  .lb-roster-list { flex-direction: column; overflow-x: hidden; overflow-y: auto; touch-action: pan-y; height: 100%; padding: 0 2px 0 0; gap: 4px; }
+}
+
+/* leggibilità HUD su sfondi chiari */
+.hud-text { text-shadow: 0 1px 2px rgba(0,0,0,0.85), 0 0 6px rgba(0,0,0,0.5); }
