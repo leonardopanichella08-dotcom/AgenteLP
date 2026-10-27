@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import jobs
+from . import auth, jobs
 from .config import FORMATS, POLICIES
 from .edit import EditError, apply_ops
 from .llm import system_prompt
@@ -23,7 +23,9 @@ STATIC = Path(__file__).parent / "static"
 
 app = FastAPI(title="REELS API", version="0.1.0",
               description="Agente di video editing: script+clip → video montato, video lungo → reel.")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+auth.install(app)                                     # prima della CORS: la CORS resta lo strato più esterno
+app.add_middleware(CORSMiddleware, allow_origins=[auth.portal_url()] if auth.portal_url() else ["*"],
+                   allow_methods=["*"], allow_headers=["Authorization", "Content-Type"])
 
 
 def _project(pid: str) -> Project:
