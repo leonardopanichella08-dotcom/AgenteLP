@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>REELS · Editor automatico</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="logo">R</span><b>REELS</b><span class="muted">agente di montaggio</span></div>
+    <nav>
+      <button class="link" id="nav-new">Nuovo progetto</button>
+      <button class="link" id="nav-schema">Schema JSON</button>
+      <button class="link" id="nav-prompt">System prompt</button>
+    </nav>
+  </header>
+  <main id="app" aria-live="polite"></main>
+  <div id="toast" role="status"></div>
+  <dialog id="dlg"><div class="dlg-head"><b id="dlg-title"></b><button class="link" id="dlg-close">Chiudi</button></div><pre id="dlg-body"></pre></dialog>
+  <script src="app.js"></script>
+</body>
+</html>

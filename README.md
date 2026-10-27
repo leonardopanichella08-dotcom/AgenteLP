@@ -9,6 +9,7 @@ agente specializzato con la propria architettura.
 | Funzione | Stato | Cosa fa | Cartella |
 |---|---|---|---|
 | **LUKA** | attiva (v0.1) | Analisi profili LinkedIn, discovery post virali di nicchia, generazione di commenti/repost ad alto impatto, esecuzione assistita via deep-link | [`functions/luka/`](functions/luka/) |
+| **REELS** | attiva (v0.1) | Video editing autonomo: script + clip → video montato, video lungo → 3-5 reel (9:16, 4:5, 1:1, 16:9) con tagli nel silenzio reale, sottotitoli dinamici, SFX, zoom, B-roll | [`functions/reels/`](functions/reels/) |
 | **ANDREA** | pianificata | Ex "Architetto Gestionale": parsing Excel, simulazioni what-if, metriche e spiegazioni AI. Verrà migrata qui con tutta la sua memoria e i processi locali. | `functions/andrea/` (da creare) |
 
 Le funzioni **non condividono logica di dominio** tra loro: condividono solo
@@ -21,6 +22,7 @@ agente). Vedi [`docs/architecture.md`](docs/architecture.md).
 AgenteLP/
   functions/
     luka/            # agente LUKA — FastAPI + React, deployabile in autonomia
+    reels/           # agente REELS — FastAPI + dashboard statica + FFmpeg (serve un container, non Vercel)
     andrea/          # (futuro) agente ANDREA
   docs/
     architecture.md  # contratto dell'ecosistema condiviso

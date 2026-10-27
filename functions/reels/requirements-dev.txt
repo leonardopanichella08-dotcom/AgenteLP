@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=8.0
+scikit-image>=0.22   # opzionale: test del rilevatore di volti su una foto reale
+pillow>=10

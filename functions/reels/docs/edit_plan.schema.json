@@ -1,0 +1,1081 @@
+{
+  "$defs": {
+    "Broll": {
+      "properties": {
+        "out_start": {
+          "title": "Out Start",
+          "type": "number"
+        },
+        "out_end": {
+          "title": "Out End",
+          "type": "number"
+        },
+        "query": {
+          "title": "Query",
+          "type": "string"
+        },
+        "asset_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Asset Path"
+        },
+        "provider": {
+          "default": "pexels",
+          "enum": [
+            "pexels",
+            "shutterstock",
+            "local"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "layout": {
+          "default": "fullscreen",
+          "enum": [
+            "fullscreen",
+            "pip"
+          ],
+          "title": "Layout",
+          "type": "string"
+        }
+      },
+      "required": [
+        "out_start",
+        "out_end",
+        "query"
+      ],
+      "title": "Broll",
+      "type": "object"
+    },
+    "CutInfo": {
+      "properties": {
+        "asr_time": {
+          "description": "dove avrebbe tagliato un editor ingenuo (timestamp ASR)",
+          "title": "Asr Time",
+          "type": "number"
+        },
+        "time": {
+          "description": "taglio finale, nel silenzio reale e agganciato al frame",
+          "title": "Time",
+          "type": "number"
+        },
+        "frame": {
+          "title": "Frame",
+          "type": "integer"
+        },
+        "method": {
+          "enum": [
+            "silence_gap",
+            "valley",
+            "file_edge"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "silence": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Silence"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "asr_time",
+        "time",
+        "frame",
+        "method",
+        "confidence",
+        "reason"
+      ],
+      "title": "CutInfo",
+      "type": "object"
+    },
+    "ExportTarget": {
+      "properties": {
+        "format_id": {
+          "enum": [
+            "9:16",
+            "4:5",
+            "1:1",
+            "16:9"
+          ],
+          "title": "Format Id",
+          "type": "string"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        },
+        "fps": {
+          "default": 30,
+          "title": "Fps",
+          "type": "integer"
+        },
+        "platforms": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Platforms",
+          "type": "array"
+        },
+        "reframe": {
+          "$ref": "#/$defs/ReframeOptions",
+          "default": {
+            "strategy": "auto",
+            "blur_sigma": 30,
+            "smooth": 0.85
+          }
+        }
+      },
+      "required": [
+        "format_id",
+        "width",
+        "height"
+      ],
+      "title": "ExportTarget",
+      "type": "object"
+    },
+    "Framing": {
+      "properties": {
+        "format_id": {
+          "enum": [
+            "9:16",
+            "4:5",
+            "1:1",
+            "16:9"
+          ],
+          "title": "Format Id",
+          "type": "string"
+        },
+        "strategy": {
+          "enum": [
+            "none",
+            "smart_crop",
+            "blur_pad"
+          ],
+          "title": "Strategy",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "crop_keyframes": {
+          "additionalProperties": {
+            "items": {
+              "$ref": "#/$defs/Keyframe"
+            },
+            "type": "array"
+          },
+          "default": {},
+          "description": "per segment_id: finestra di crop in pixel sorgente (interpolazione lineare)",
+          "title": "Crop Keyframes",
+          "type": "object"
+        },
+        "active_speaker": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "default": {},
+          "description": "segment_id -> speaker seguiti",
+          "title": "Active Speaker",
+          "type": "object"
+        },
+        "blur_sigma": {
+          "default": 30,
+          "title": "Blur Sigma",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "format_id",
+        "strategy",
+        "reason"
+      ],
+      "title": "Framing",
+      "type": "object"
+    },
+    "Keyframe": {
+      "properties": {
+        "t": {
+          "description": "secondi dall'inizio del segmento",
+          "title": "T",
+          "type": "number"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "w": {
+          "title": "W",
+          "type": "number"
+        },
+        "h": {
+          "title": "H",
+          "type": "number"
+        }
+      },
+      "required": [
+        "t",
+        "x",
+        "y",
+        "w",
+        "h"
+      ],
+      "title": "Keyframe",
+      "type": "object"
+    },
+    "OutWord": {
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "out_start": {
+          "title": "Out Start",
+          "type": "number"
+        },
+        "out_end": {
+          "title": "Out End",
+          "type": "number"
+        },
+        "src_start": {
+          "title": "Src Start",
+          "type": "number"
+        },
+        "src_end": {
+          "title": "Src End",
+          "type": "number"
+        },
+        "speaker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Speaker"
+        },
+        "segment_id": {
+          "title": "Segment Id",
+          "type": "string"
+        },
+        "emphasis": {
+          "default": "none",
+          "enum": [
+            "none",
+            "keyword",
+            "number",
+            "power"
+          ],
+          "title": "Emphasis",
+          "type": "string"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color"
+        },
+        "emoji": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Emoji"
+        }
+      },
+      "required": [
+        "text",
+        "out_start",
+        "out_end",
+        "src_start",
+        "src_end",
+        "segment_id"
+      ],
+      "title": "OutWord",
+      "type": "object"
+    },
+    "Reel": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "rank": {
+          "title": "Rank",
+          "type": "integer"
+        },
+        "duration": {
+          "title": "Duration",
+          "type": "number"
+        },
+        "virality": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ViralityScore"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "timeline": {
+          "items": {
+            "$ref": "#/$defs/Segment"
+          },
+          "title": "Timeline",
+          "type": "array"
+        },
+        "words": {
+          "items": {
+            "$ref": "#/$defs/OutWord"
+          },
+          "title": "Words",
+          "type": "array"
+        },
+        "transcript": {
+          "title": "Transcript",
+          "type": "string"
+        },
+        "framing": {
+          "items": {
+            "$ref": "#/$defs/Framing"
+          },
+          "title": "Framing",
+          "type": "array"
+        },
+        "subtitles": {
+          "$ref": "#/$defs/SubtitleStyle"
+        },
+        "zooms": {
+          "items": {
+            "$ref": "#/$defs/ZoomRule"
+          },
+          "title": "Zooms",
+          "type": "array"
+        },
+        "sfx": {
+          "items": {
+            "$ref": "#/$defs/SfxCue"
+          },
+          "title": "Sfx",
+          "type": "array"
+        },
+        "broll": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Broll"
+          },
+          "title": "Broll",
+          "type": "array"
+        },
+        "transitions": {
+          "items": {
+            "$ref": "#/$defs/Transition"
+          },
+          "title": "Transitions",
+          "type": "array"
+        },
+        "social": {
+          "$ref": "#/$defs/Social"
+        },
+        "selected": {
+          "default": true,
+          "title": "Selected",
+          "type": "boolean"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "rank",
+        "duration",
+        "timeline",
+        "words",
+        "transcript",
+        "framing",
+        "subtitles",
+        "zooms",
+        "sfx",
+        "transitions",
+        "social"
+      ],
+      "title": "Reel",
+      "type": "object"
+    },
+    "ReframeOptions": {
+      "properties": {
+        "strategy": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "smart_crop",
+            "blur_pad"
+          ],
+          "title": "Strategy",
+          "type": "string"
+        },
+        "blur_sigma": {
+          "default": 30,
+          "maximum": 80,
+          "minimum": 0,
+          "title": "Blur Sigma",
+          "type": "integer"
+        },
+        "smooth": {
+          "default": 0.85,
+          "description": "0=reattivo, 0.99=camera ferma",
+          "maximum": 0.99,
+          "minimum": 0,
+          "title": "Smooth",
+          "type": "number"
+        }
+      },
+      "title": "ReframeOptions",
+      "type": "object"
+    },
+    "ScriptUnitReport": {
+      "properties": {
+        "unit": {
+          "title": "Unit",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "matched",
+            "weak",
+            "missing"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "chosen_take": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Chosen Take"
+        },
+        "similarity": {
+          "default": 0.0,
+          "title": "Similarity",
+          "type": "number"
+        },
+        "alternatives": {
+          "default": [],
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        }
+      },
+      "required": [
+        "unit",
+        "text",
+        "status"
+      ],
+      "title": "ScriptUnitReport",
+      "type": "object"
+    },
+    "Segment": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "src_start": {
+          "title": "Src Start",
+          "type": "number"
+        },
+        "src_end": {
+          "title": "Src End",
+          "type": "number"
+        },
+        "src_start_frame": {
+          "title": "Src Start Frame",
+          "type": "integer"
+        },
+        "src_end_frame": {
+          "title": "Src End Frame",
+          "type": "integer"
+        },
+        "out_start": {
+          "title": "Out Start",
+          "type": "number"
+        },
+        "out_end": {
+          "title": "Out End",
+          "type": "number"
+        },
+        "cut_in": {
+          "$ref": "#/$defs/CutInfo"
+        },
+        "cut_out": {
+          "$ref": "#/$defs/CutInfo"
+        },
+        "removed_before": {
+          "anyOf": [
+            {
+              "enum": [
+                "pause",
+                "drop",
+                "filler",
+                "take_change"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Removed Before"
+        },
+        "script_unit": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Script Unit"
+        },
+        "take_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Take Id"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "source_id",
+        "src_start",
+        "src_end",
+        "src_start_frame",
+        "src_end_frame",
+        "out_start",
+        "out_end",
+        "cut_in",
+        "cut_out"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "SfxCue": {
+      "properties": {
+        "out_time": {
+          "title": "Out Time",
+          "type": "number"
+        },
+        "sfx_id": {
+          "enum": [
+            "whoosh",
+            "pop",
+            "ding",
+            "click",
+            "riser"
+          ],
+          "title": "Sfx Id",
+          "type": "string"
+        },
+        "gain_db": {
+          "default": -12.0,
+          "title": "Gain Db",
+          "type": "number"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "anchor_word": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Anchor Word"
+        }
+      },
+      "required": [
+        "out_time",
+        "sfx_id",
+        "reason"
+      ],
+      "title": "SfxCue",
+      "type": "object"
+    },
+    "Social": {
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "caption": {
+          "title": "Caption",
+          "type": "string"
+        },
+        "hashtags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hashtags",
+          "type": "array"
+        }
+      },
+      "required": [
+        "title",
+        "caption",
+        "hashtags"
+      ],
+      "title": "Social",
+      "type": "object"
+    },
+    "Source": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "duration": {
+          "title": "Duration",
+          "type": "number"
+        },
+        "fps": {
+          "title": "Fps",
+          "type": "number"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        },
+        "has_audio": {
+          "default": true,
+          "title": "Has Audio",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "duration",
+        "fps",
+        "width",
+        "height"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SubtitleStyle": {
+      "properties": {
+        "preset": {
+          "default": "hormozi",
+          "enum": [
+            "hormozi",
+            "mrbeast",
+            "clean",
+            "karaoke"
+          ],
+          "title": "Preset",
+          "type": "string"
+        },
+        "font": {
+          "default": "Inter",
+          "title": "Font",
+          "type": "string"
+        },
+        "font_size_pct": {
+          "default": 0.062,
+          "description": "altezza font / altezza frame",
+          "title": "Font Size Pct",
+          "type": "number"
+        },
+        "uppercase": {
+          "default": true,
+          "title": "Uppercase",
+          "type": "boolean"
+        },
+        "max_words_per_line": {
+          "default": 3,
+          "title": "Max Words Per Line",
+          "type": "integer"
+        },
+        "primary_color": {
+          "default": "#FFFFFF",
+          "title": "Primary Color",
+          "type": "string"
+        },
+        "highlight_colors": {
+          "default": [
+            "#FFE600",
+            "#00E676",
+            "#FF3B30"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Highlight Colors",
+          "type": "array"
+        },
+        "outline_color": {
+          "default": "#000000",
+          "title": "Outline Color",
+          "type": "string"
+        },
+        "outline_px": {
+          "default": 0.008,
+          "title": "Outline Px",
+          "type": "number"
+        },
+        "pop_scale": {
+          "default": 1.18,
+          "title": "Pop Scale",
+          "type": "number"
+        },
+        "position_y": {
+          "default": 0.66,
+          "description": "centro riga, frazione dell'altezza (0=alto)",
+          "title": "Position Y",
+          "type": "number"
+        },
+        "safe_top": {
+          "default": 0.1,
+          "title": "Safe Top",
+          "type": "number"
+        },
+        "safe_bottom": {
+          "default": 0.22,
+          "title": "Safe Bottom",
+          "type": "number"
+        },
+        "emoji": {
+          "default": true,
+          "title": "Emoji",
+          "type": "boolean"
+        }
+      },
+      "title": "SubtitleStyle",
+      "type": "object"
+    },
+    "Transition": {
+      "properties": {
+        "out_time": {
+          "title": "Out Time",
+          "type": "number"
+        },
+        "type": {
+          "default": "cut",
+          "enum": [
+            "cut",
+            "fade",
+            "whoosh_cut"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "duration": {
+          "default": 0.0,
+          "title": "Duration",
+          "type": "number"
+        }
+      },
+      "required": [
+        "out_time"
+      ],
+      "title": "Transition",
+      "type": "object"
+    },
+    "ViralityScore": {
+      "properties": {
+        "score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Score",
+          "type": "integer"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "hook_text": {
+          "default": "",
+          "title": "Hook Text",
+          "type": "string"
+        },
+        "signals": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "default": {},
+          "title": "Signals",
+          "type": "object"
+        }
+      },
+      "required": [
+        "score",
+        "reasons"
+      ],
+      "title": "ViralityScore",
+      "type": "object"
+    },
+    "ZoomRule": {
+      "properties": {
+        "out_start": {
+          "title": "Out Start",
+          "type": "number"
+        },
+        "out_end": {
+          "title": "Out End",
+          "type": "number"
+        },
+        "from_scale": {
+          "default": 1.0,
+          "title": "From Scale",
+          "type": "number"
+        },
+        "to_scale": {
+          "default": 1.12,
+          "title": "To Scale",
+          "type": "number"
+        },
+        "easing": {
+          "default": "ease_out",
+          "enum": [
+            "linear",
+            "ease_out"
+          ],
+          "title": "Easing",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "segment_start",
+            "emphasis",
+            "scene_change",
+            "punch_in"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "anchor": {
+          "default": [
+            0.5,
+            0.45
+          ],
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Anchor",
+          "type": "array"
+        }
+      },
+      "required": [
+        "out_start",
+        "out_end",
+        "reason"
+      ],
+      "title": "ZoomRule",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "script_assembly",
+        "long_form_extraction"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "cut_policy": {
+      "default": "natural",
+      "enum": [
+        "tight",
+        "natural",
+        "relaxed"
+      ],
+      "title": "Cut Policy",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "exports": {
+      "items": {
+        "$ref": "#/$defs/ExportTarget"
+      },
+      "title": "Exports",
+      "type": "array"
+    },
+    "reels": {
+      "items": {
+        "$ref": "#/$defs/Reel"
+      },
+      "title": "Reels",
+      "type": "array"
+    },
+    "script_report": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ScriptUnitReport"
+      },
+      "title": "Script Report",
+      "type": "array"
+    },
+    "diagnostics": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Diagnostics",
+      "type": "object"
+    }
+  },
+  "required": [
+    "project_id",
+    "mode",
+    "sources",
+    "exports",
+    "reels"
+  ],
+  "title": "EditPlan",
+  "type": "object"
+}

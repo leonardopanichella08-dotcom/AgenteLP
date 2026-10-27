@@ -1,0 +1,1584 @@
+{
+ "schema_version": "1.0",
+ "project_id": "demo",
+ "mode": "long_form_extraction",
+ "cut_policy": "natural",
+ "sources": [
+  {
+   "id": "podcast",
+   "path": "sources/podcast.mp4",
+   "duration": 42.266667,
+   "fps": 30.0,
+   "width": 960,
+   "height": 540,
+   "has_audio": true
+  }
+ ],
+ "exports": [
+  {
+   "format_id": "9:16",
+   "width": 1080,
+   "height": 1920,
+   "fps": 30,
+   "platforms": [
+    "tiktok",
+    "instagram_reels",
+    "youtube_shorts",
+    "facebook_reels"
+   ],
+   "reframe": {
+    "strategy": "auto",
+    "blur_sigma": 30,
+    "smooth": 0.85
+   }
+  },
+  {
+   "format_id": "16:9",
+   "width": 1920,
+   "height": 1080,
+   "fps": 30,
+   "platforms": [
+    "linkedin_video",
+    "youtube",
+    "web"
+   ],
+   "reframe": {
+    "strategy": "auto",
+    "blur_sigma": 30,
+    "smooth": 0.85
+   }
+  }
+ ],
+ "reels": [
+  {
+   "id": "reel1",
+   "title": "Davvero?",
+   "rank": 1,
+   "duration": 25.233333,
+   "virality": {
+    "score": 85,
+    "reasons": [
+     "Si apre con una domanda: curiosità immediata",
+     "Attacco forte (formula da gancio)",
+     "Parole ad alto impatto emotivo",
+     "Attacco pulito: parte dopo una pausa",
+     "Chiude su una frase compiuta",
+     "Ritmo di parlato ottimale",
+     "Si chiude con un payoff forte"
+    ],
+    "hook_text": "Davvero?",
+    "signals": {
+     "hook_question": 9.0,
+     "hook_opening": 8.0,
+     "power_words": 3.33,
+     "clean_start": 5.0,
+     "clean_end": 5.0,
+     "words_per_sec": 2.69,
+     "pace": 6.0,
+     "duration_fit": 6.65,
+     "payoff": 4.0
+    }
+   },
+   "timeline": [
+    {
+     "id": "s1",
+     "source_id": "podcast",
+     "src_start": 7.7,
+     "src_end": 8.266667,
+     "src_start_frame": 231,
+     "src_end_frame": 248,
+     "out_start": 0.0,
+     "out_end": 0.566667,
+     "cut_in": {
+      "asr_time": 7.782,
+      "time": 7.7,
+      "frame": 231,
+      "method": "silence_gap",
+      "silence": [
+       6.99,
+       7.77
+      ],
+      "confidence": 1.0,
+      "reason": "inizio reel"
+     },
+     "cut_out": {
+      "asr_time": 8.159,
+      "time": 8.266667,
+      "frame": 248,
+      "method": "silence_gap",
+      "silence": [
+       8.195,
+       8.875
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "removed_before": null,
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    },
+    {
+     "id": "s2",
+     "source_id": "podcast",
+     "src_start": 8.8,
+     "src_end": 9.8,
+     "src_start_frame": 264,
+     "src_end_frame": 294,
+     "out_start": 0.566667,
+     "out_end": 1.566667,
+     "cut_in": {
+      "asr_time": 8.828,
+      "time": 8.8,
+      "frame": 264,
+      "method": "silence_gap",
+      "silence": [
+       8.195,
+       8.875
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "cut_out": {
+      "asr_time": 9.788,
+      "time": 9.8,
+      "frame": 294,
+      "method": "silence_gap",
+      "silence": [
+       9.8,
+       10.365
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "removed_before": "pause",
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    },
+    {
+     "id": "s3",
+     "source_id": "podcast",
+     "src_start": 10.3,
+     "src_end": 11.666667,
+     "src_start_frame": 309,
+     "src_end_frame": 350,
+     "out_start": 1.566667,
+     "out_end": 2.933333,
+     "cut_in": {
+      "asr_time": 10.382,
+      "time": 10.3,
+      "frame": 309,
+      "method": "silence_gap",
+      "silence": [
+       9.8,
+       10.365
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "cut_out": {
+      "asr_time": 11.652,
+      "time": 11.666667,
+      "frame": 350,
+      "method": "silence_gap",
+      "silence": [
+       11.57,
+       12.45
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "removed_before": "pause",
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    },
+    {
+     "id": "s4",
+     "source_id": "podcast",
+     "src_start": 12.4,
+     "src_end": 18.6,
+     "src_start_frame": 372,
+     "src_end_frame": 558,
+     "out_start": 2.933333,
+     "out_end": 9.133333,
+     "cut_in": {
+      "asr_time": 12.476,
+      "time": 12.4,
+      "frame": 372,
+      "method": "silence_gap",
+      "silence": [
+       11.57,
+       12.45
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "cut_out": {
+      "asr_time": 18.465,
+      "time": 18.6,
+      "frame": 558,
+      "method": "silence_gap",
+      "silence": [
+       18.53,
+       19.81
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "removed_before": "pause",
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    },
+    {
+     "id": "s5",
+     "source_id": "podcast",
+     "src_start": 19.733333,
+     "src_end": 22.2,
+     "src_start_frame": 592,
+     "src_end_frame": 666,
+     "out_start": 9.133333,
+     "out_end": 11.6,
+     "cut_in": {
+      "asr_time": 19.866,
+      "time": 19.733333,
+      "frame": 592,
+      "method": "silence_gap",
+      "silence": [
+       18.53,
+       19.81
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "cut_out": {
+      "asr_time": 22.108,
+      "time": 22.2,
+      "frame": 666,
+      "method": "silence_gap",
+      "silence": [
+       22.115,
+       22.9
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "removed_before": "pause",
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    },
+    {
+     "id": "s6",
+     "source_id": "podcast",
+     "src_start": 22.833333,
+     "src_end": 29.3,
+     "src_start_frame": 685,
+     "src_end_frame": 879,
+     "out_start": 11.6,
+     "out_end": 18.066667,
+     "cut_in": {
+      "asr_time": 22.893,
+      "time": 22.833333,
+      "frame": 685,
+      "method": "silence_gap",
+      "silence": [
+       22.115,
+       22.9
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "cut_out": {
+      "asr_time": 29.154,
+      "time": 29.3,
+      "frame": 879,
+      "method": "silence_gap",
+      "silence": [
+       29.205,
+       30.19
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "removed_before": "pause",
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    },
+    {
+     "id": "s7",
+     "source_id": "podcast",
+     "src_start": 30.133333,
+     "src_end": 31.466667,
+     "src_start_frame": 904,
+     "src_end_frame": 944,
+     "out_start": 18.066667,
+     "out_end": 19.4,
+     "cut_in": {
+      "asr_time": 30.246,
+      "time": 30.133333,
+      "frame": 904,
+      "method": "silence_gap",
+      "silence": [
+       29.205,
+       30.19
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "cut_out": {
+      "asr_time": 31.377,
+      "time": 31.466667,
+      "frame": 944,
+      "method": "silence_gap",
+      "silence": [
+       31.37,
+       31.955
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "removed_before": "pause",
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    },
+    {
+     "id": "s8",
+     "source_id": "podcast",
+     "src_start": 31.9,
+     "src_end": 37.733333,
+     "src_start_frame": 957,
+     "src_end_frame": 1132,
+     "out_start": 19.4,
+     "out_end": 25.233333,
+     "cut_in": {
+      "asr_time": 31.967,
+      "time": 31.9,
+      "frame": 957,
+      "method": "silence_gap",
+      "silence": [
+       31.37,
+       31.955
+      ],
+      "confidence": 1.0,
+      "reason": "pause"
+     },
+     "cut_out": {
+      "asr_time": 37.713,
+      "time": 37.733333,
+      "frame": 1132,
+      "method": "silence_gap",
+      "silence": [
+       37.645,
+       38.53
+      ],
+      "confidence": 1.0,
+      "reason": "fine reel"
+     },
+     "removed_before": "pause",
+     "script_unit": null,
+     "take_id": null,
+     "warnings": []
+    }
+   ],
+   "words": [
+    {
+     "text": "Davvero?",
+     "out_start": 0.082,
+     "out_end": 0.459,
+     "src_start": 7.782,
+     "src_end": 8.159,
+     "speaker": "B",
+     "segment_id": "s1",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "Sì,",
+     "out_start": 0.594667,
+     "out_end": 0.860667,
+     "src_start": 8.828,
+     "src_end": 9.094,
+     "speaker": "A",
+     "segment_id": "s2",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "il",
+     "out_start": 0.952667,
+     "out_end": 1.094667,
+     "src_start": 9.186,
+     "src_end": 9.328,
+     "speaker": "A",
+     "segment_id": "s2",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "segreto",
+     "out_start": 1.209667,
+     "out_end": 1.554667,
+     "src_start": 9.443,
+     "src_end": 9.788,
+     "speaker": "A",
+     "segment_id": "s2",
+     "emphasis": "power",
+     "color": "#FF3B30",
+     "emoji": "🤫"
+    },
+    {
+     "text": "non",
+     "out_start": 1.648667,
+     "out_end": 1.911667,
+     "src_start": 10.382,
+     "src_end": 10.645,
+     "speaker": "A",
+     "segment_id": "s3",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "è",
+     "out_start": 2.024667,
+     "out_end": 2.058667,
+     "src_start": 10.758,
+     "src_end": 10.792,
+     "speaker": "A",
+     "segment_id": "s3",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "il",
+     "out_start": 2.207667,
+     "out_end": 2.243667,
+     "src_start": 10.941,
+     "src_end": 10.977,
+     "speaker": "A",
+     "segment_id": "s3",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "software.",
+     "out_start": 2.464667,
+     "out_end": 2.918667,
+     "src_start": 11.198,
+     "src_end": 11.652,
+     "speaker": "A",
+     "segment_id": "s3",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "È",
+     "out_start": 3.009333,
+     "out_end": 3.173333,
+     "src_start": 12.476,
+     "src_end": 12.64,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "il",
+     "out_start": 3.165333,
+     "out_end": 3.432333,
+     "src_start": 12.632,
+     "src_end": 12.899,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "ritmo!",
+     "out_start": 3.537333,
+     "out_end": 3.744333,
+     "src_start": 13.004,
+     "src_end": 13.211,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "keyword",
+     "color": "#FFE600",
+     "emoji": "🎵"
+    },
+    {
+     "text": "Ogni",
+     "out_start": 3.860333,
+     "out_end": 4.138333,
+     "src_start": 13.327,
+     "src_end": 13.605,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "pausa",
+     "out_start": 4.266333,
+     "out_end": 4.609333,
+     "src_start": 13.733,
+     "src_end": 14.076,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "morta",
+     "out_start": 4.590333,
+     "out_end": 4.866333,
+     "src_start": 14.057,
+     "src_end": 14.333,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "di",
+     "out_start": 4.877333,
+     "out_end": 5.022333,
+     "src_start": 14.344,
+     "src_end": 14.489,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "mezzo",
+     "out_start": 5.107333,
+     "out_end": 5.541333,
+     "src_start": 14.574,
+     "src_end": 15.008,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "secondo",
+     "out_start": 5.486333,
+     "out_end": 5.990333,
+     "src_start": 14.953,
+     "src_end": 15.457,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "number",
+     "color": "#00E676",
+     "emoji": null
+    },
+    {
+     "text": "vi",
+     "out_start": 5.918333,
+     "out_end": 6.206333,
+     "src_start": 15.385,
+     "src_end": 15.673,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "costa",
+     "out_start": 6.290333,
+     "out_end": 6.672333,
+     "src_start": 15.757,
+     "src_end": 16.139,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "il",
+     "out_start": 6.609333,
+     "out_end": 6.902333,
+     "src_start": 16.076,
+     "src_end": 16.369,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "quaranta",
+     "out_start": 6.793333,
+     "out_end": 7.241333,
+     "src_start": 16.26,
+     "src_end": 16.708,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "per",
+     "out_start": 7.398333,
+     "out_end": 7.562333,
+     "src_start": 16.865,
+     "src_end": 17.029,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "cento",
+     "out_start": 7.663333,
+     "out_end": 8.017333,
+     "src_start": 17.13,
+     "src_end": 17.484,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "della",
+     "out_start": 8.186333,
+     "out_end": 8.425333,
+     "src_start": 17.653,
+     "src_end": 17.892,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "ritenzione.",
+     "out_start": 8.472333,
+     "out_end": 8.998333,
+     "src_start": 17.939,
+     "src_end": 18.465,
+     "speaker": "A",
+     "segment_id": "s4",
+     "emphasis": "power",
+     "color": "#FF3B30",
+     "emoji": null
+    },
+    {
+     "text": "Ma",
+     "out_start": 9.266,
+     "out_end": 9.472,
+     "src_start": 19.866,
+     "src_end": 20.072,
+     "speaker": "B",
+     "segment_id": "s5",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "io",
+     "out_start": 9.395,
+     "out_end": 9.736,
+     "src_start": 19.995,
+     "src_end": 20.336,
+     "speaker": "B",
+     "segment_id": "s5",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "ho",
+     "out_start": 9.69,
+     "out_end": 10.003,
+     "src_start": 20.29,
+     "src_end": 20.603,
+     "speaker": "B",
+     "segment_id": "s5",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "sempre",
+     "out_start": 10.045,
+     "out_end": 10.418,
+     "src_start": 20.645,
+     "src_end": 21.018,
+     "speaker": "B",
+     "segment_id": "s5",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "tagliato",
+     "out_start": 10.499,
+     "out_end": 10.912,
+     "src_start": 21.099,
+     "src_end": 21.512,
+     "speaker": "B",
+     "segment_id": "s5",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "a",
+     "out_start": 10.942,
+     "out_end": 11.075,
+     "src_start": 21.542,
+     "src_end": 21.675,
+     "speaker": "B",
+     "segment_id": "s5",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "occhio.",
+     "out_start": 11.187,
+     "out_end": 11.508,
+     "src_start": 21.787,
+     "src_end": 22.108,
+     "speaker": "B",
+     "segment_id": "s5",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "Ecco",
+     "out_start": 11.659667,
+     "out_end": 11.995667,
+     "src_start": 22.893,
+     "src_end": 23.229,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "l'errore",
+     "out_start": 11.987667,
+     "out_end": 12.416667,
+     "src_start": 23.221,
+     "src_end": 23.65,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "più",
+     "out_start": 12.981667,
+     "out_end": 13.229667,
+     "src_start": 24.215,
+     "src_end": 24.463,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "comune:",
+     "out_start": 13.322667,
+     "out_end": 13.576667,
+     "src_start": 24.556,
+     "src_end": 24.81,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "tagliare",
+     "out_start": 13.684667,
+     "out_end": 14.215667,
+     "src_start": 24.918,
+     "src_end": 25.449,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "dove",
+     "out_start": 14.285667,
+     "out_end": 14.402667,
+     "src_start": 25.519,
+     "src_end": 25.636,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "sembra",
+     "out_start": 14.647667,
+     "out_end": 14.979667,
+     "src_start": 25.881,
+     "src_end": 26.213,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "giusto",
+     "out_start": 14.937667,
+     "out_end": 15.235667,
+     "src_start": 26.171,
+     "src_end": 26.469,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "invece",
+     "out_start": 15.382667,
+     "out_end": 15.643667,
+     "src_start": 26.616,
+     "src_end": 26.877,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "che",
+     "out_start": 15.730667,
+     "out_end": 16.064667,
+     "src_start": 26.964,
+     "src_end": 27.298,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "dove",
+     "out_start": 15.996667,
+     "out_end": 16.362667,
+     "src_start": 27.23,
+     "src_end": 27.596,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "il",
+     "out_start": 16.514667,
+     "out_end": 16.710667,
+     "src_start": 27.748,
+     "src_end": 27.944,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "suono",
+     "out_start": 16.801667,
+     "out_end": 16.946667,
+     "src_start": 28.035,
+     "src_end": 28.18,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "finisce",
+     "out_start": 17.099667,
+     "out_end": 17.472667,
+     "src_start": 28.333,
+     "src_end": 28.706,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "davvero.",
+     "out_start": 17.590667,
+     "out_end": 17.920667,
+     "src_start": 28.824,
+     "src_end": 29.154,
+     "speaker": "A",
+     "segment_id": "s6",
+     "emphasis": "power",
+     "color": "#FF3B30",
+     "emoji": null
+    },
+    {
+     "text": "Quindi",
+     "out_start": 18.179334,
+     "out_end": 18.532334,
+     "src_start": 30.246,
+     "src_end": 30.599,
+     "speaker": "B",
+     "segment_id": "s7",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "come",
+     "out_start": 18.590334,
+     "out_end": 18.883334,
+     "src_start": 30.657,
+     "src_end": 30.95,
+     "speaker": "B",
+     "segment_id": "s7",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "si",
+     "out_start": 18.829334,
+     "out_end": 19.140334,
+     "src_start": 30.896,
+     "src_end": 31.207,
+     "speaker": "B",
+     "segment_id": "s7",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "fa?",
+     "out_start": 19.148334,
+     "out_end": 19.310334,
+     "src_start": 31.215,
+     "src_end": 31.377,
+     "speaker": "B",
+     "segment_id": "s7",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "Si",
+     "out_start": 19.467,
+     "out_end": 19.655,
+     "src_start": 31.967,
+     "src_end": 32.155,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "guarda",
+     "out_start": 19.634,
+     "out_end": 20.115,
+     "src_start": 32.134,
+     "src_end": 32.615,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "l'onda",
+     "out_start": 20.197,
+     "out_end": 20.46,
+     "src_start": 32.697,
+     "src_end": 32.96,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "audio,",
+     "out_start": 20.588,
+     "out_end": 20.8,
+     "src_start": 33.088,
+     "src_end": 33.3,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "si",
+     "out_start": 20.84,
+     "out_end": 21.066,
+     "src_start": 33.34,
+     "src_end": 33.566,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "cerca",
+     "out_start": 21.203,
+     "out_end": 21.518,
+     "src_start": 33.703,
+     "src_end": 34.018,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "il",
+     "out_start": 21.556,
+     "out_end": 21.633,
+     "src_start": 34.056,
+     "src_end": 34.133,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "silenzio",
+     "out_start": 21.826,
+     "out_end": 22.126,
+     "src_start": 34.326,
+     "src_end": 34.626,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "vero",
+     "out_start": 22.308,
+     "out_end": 22.468,
+     "src_start": 34.808,
+     "src_end": 34.968,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "e",
+     "out_start": 22.595,
+     "out_end": 22.709,
+     "src_start": 35.095,
+     "src_end": 35.209,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "si",
+     "out_start": 22.751,
+     "out_end": 22.941,
+     "src_start": 35.251,
+     "src_end": 35.441,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "taglia",
+     "out_start": 23.05,
+     "out_end": 23.302,
+     "src_start": 35.55,
+     "src_end": 35.802,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "lì,",
+     "out_start": 23.403,
+     "out_end": 23.697,
+     "src_start": 35.903,
+     "src_end": 36.197,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "mai",
+     "out_start": 23.761,
+     "out_end": 24.02,
+     "src_start": 36.261,
+     "src_end": 36.52,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "dentro",
+     "out_start": 24.05,
+     "out_end": 24.411,
+     "src_start": 36.55,
+     "src_end": 36.911,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "una",
+     "out_start": 24.384,
+     "out_end": 24.755,
+     "src_start": 36.884,
+     "src_end": 37.255,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    },
+    {
+     "text": "parola.",
+     "out_start": 24.727,
+     "out_end": 25.213,
+     "src_start": 37.227,
+     "src_end": 37.713,
+     "speaker": "A",
+     "segment_id": "s8",
+     "emphasis": "none",
+     "color": null,
+     "emoji": null
+    }
+   ],
+   "transcript": "Davvero? Sì, il segreto non è il software. È il ritmo! Ogni pausa morta di mezzo secondo vi costa il quaranta per cento della ritenzione. Ma io ho sempre tagliato a occhio. Ecco l'errore più comune: tagliare dove sembra giusto invece che dove il suono finisce davvero. Quindi come si fa? Si guarda l'onda audio, si cerca il silenzio vero e si taglia lì, mai dentro una parola.",
+   "framing": [
+    {
+     "format_id": "9:16",
+     "strategy": "smart_crop",
+     "reason": "volti rilevati nel 100% del tempo: crop sul parlante attivo",
+     "crop_keyframes": {
+      "s1": [
+       {
+        "t": 0.0,
+        "x": 568.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 0.567,
+        "x": 568.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ],
+      "s2": [
+       {
+        "t": 0.0,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 1.1,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ],
+      "s3": [
+       {
+        "t": 0.0,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 1.367,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ],
+      "s4": [
+       {
+        "t": 0.0,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 6.2,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ],
+      "s5": [
+       {
+        "t": 0.0,
+        "x": 568.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 2.467,
+        "x": 568.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ],
+      "s6": [
+       {
+        "t": 0.0,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 6.467,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ],
+      "s7": [
+       {
+        "t": 0.0,
+        "x": 568.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 1.4,
+        "x": 568.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ],
+      "s8": [
+       {
+        "t": 0.0,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       },
+       {
+        "t": 5.833,
+        "x": 88.1,
+        "y": 0.0,
+        "w": 303.8,
+        "h": 540.0
+       }
+      ]
+     },
+     "active_speaker": {
+      "s1": [
+       "1"
+      ],
+      "s2": [
+       "0"
+      ],
+      "s3": [
+       "0"
+      ],
+      "s4": [
+       "0"
+      ],
+      "s5": [
+       "1"
+      ],
+      "s6": [
+       "0"
+      ],
+      "s7": [
+       "1"
+      ],
+      "s8": [
+       "0"
+      ]
+     },
+     "blur_sigma": 30
+    },
+    {
+     "format_id": "16:9",
+     "strategy": "none",
+     "reason": "la sorgente ha già questo aspect ratio",
+     "crop_keyframes": {},
+     "active_speaker": {},
+     "blur_sigma": 30
+    }
+   ],
+   "subtitles": {
+    "preset": "hormozi",
+    "font": "Inter",
+    "font_size_pct": 0.062,
+    "uppercase": true,
+    "max_words_per_line": 3,
+    "primary_color": "#FFFFFF",
+    "highlight_colors": [
+     "#FFE600",
+     "#00E676",
+     "#FF3B30"
+    ],
+    "outline_color": "#000000",
+    "outline_px": 0.008,
+    "pop_scale": 1.18,
+    "position_y": 0.66,
+    "safe_top": 0.1,
+    "safe_bottom": 0.22,
+    "emoji": true
+   },
+   "zooms": [
+    {
+     "out_start": 0.0,
+     "out_end": 0.566667,
+     "from_scale": 1.0,
+     "to_scale": 1.05,
+     "easing": "linear",
+     "reason": "segment_start",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    },
+    {
+     "out_start": 0.566667,
+     "out_end": 1.566667,
+     "from_scale": 1.12,
+     "to_scale": 1.17,
+     "easing": "linear",
+     "reason": "punch_in",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    },
+    {
+     "out_start": 1.566667,
+     "out_end": 2.933333,
+     "from_scale": 1.0,
+     "to_scale": 1.05,
+     "easing": "linear",
+     "reason": "punch_in",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    },
+    {
+     "out_start": 2.933333,
+     "out_end": 9.133333,
+     "from_scale": 1.12,
+     "to_scale": 1.17,
+     "easing": "linear",
+     "reason": "punch_in",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    },
+    {
+     "out_start": 9.133333,
+     "out_end": 11.6,
+     "from_scale": 1.0,
+     "to_scale": 1.05,
+     "easing": "linear",
+     "reason": "punch_in",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    },
+    {
+     "out_start": 11.6,
+     "out_end": 18.066667,
+     "from_scale": 1.12,
+     "to_scale": 1.17,
+     "easing": "linear",
+     "reason": "punch_in",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    },
+    {
+     "out_start": 18.066667,
+     "out_end": 19.4,
+     "from_scale": 1.0,
+     "to_scale": 1.05,
+     "easing": "linear",
+     "reason": "punch_in",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    },
+    {
+     "out_start": 19.4,
+     "out_end": 25.233333,
+     "from_scale": 1.12,
+     "to_scale": 1.17,
+     "easing": "linear",
+     "reason": "punch_in",
+     "anchor": [
+      0.5,
+      0.45
+     ]
+    }
+   ],
+   "sfx": [
+    {
+     "out_time": 1.21,
+     "sfx_id": "pop",
+     "gain_db": -16.0,
+     "reason": "parola d'impatto (power)",
+     "anchor_word": "segreto"
+    },
+    {
+     "out_time": 5.486,
+     "sfx_id": "ding",
+     "gain_db": -16.0,
+     "reason": "parola d'impatto (number)",
+     "anchor_word": "secondo"
+    },
+    {
+     "out_time": 8.472,
+     "sfx_id": "pop",
+     "gain_db": -16.0,
+     "reason": "parola d'impatto (power)",
+     "anchor_word": "ritenzione."
+    },
+    {
+     "out_time": 17.591,
+     "sfx_id": "pop",
+     "gain_db": -16.0,
+     "reason": "parola d'impatto (power)",
+     "anchor_word": "davvero."
+    }
+   ],
+   "broll": [],
+   "transitions": [
+    {
+     "out_time": 0.566667,
+     "type": "cut",
+     "duration": 0.0
+    },
+    {
+     "out_time": 1.566667,
+     "type": "cut",
+     "duration": 0.0
+    },
+    {
+     "out_time": 2.933333,
+     "type": "cut",
+     "duration": 0.0
+    },
+    {
+     "out_time": 9.133333,
+     "type": "cut",
+     "duration": 0.0
+    },
+    {
+     "out_time": 11.6,
+     "type": "cut",
+     "duration": 0.0
+    },
+    {
+     "out_time": 18.066667,
+     "type": "cut",
+     "duration": 0.0
+    },
+    {
+     "out_time": 19.4,
+     "type": "cut",
+     "duration": 0.0
+    }
+   ],
+   "social": {
+    "title": "Davvero",
+    "caption": "Davvero.\n\nDavvero? Sì, il segreto non è il software. È il ritmo! Ogni pausa morta di mezzo secondo vi costa il quaranta per cento della ritenzione. Ma io ho sempre tagliato a occhio. Ecco l'…\n\nSalva e condividi 👇",
+    "hashtags": [
+     "#davvero",
+     "#segreto",
+     "#software",
+     "#ritmo",
+     "#reels",
+     "#shorts",
+     "#perte"
+    ]
+   },
+   "selected": true,
+   "warnings": []
+  }
+ ],
+ "script_report": [],
+ "diagnostics": {}
+}
