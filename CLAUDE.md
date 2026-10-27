@@ -2,6 +2,12 @@
 
 Ogni sessione parte senza memoria: questo file è l'unica cosa che la sessione sa prima di scrivere codice.
 
+## Regola n.0 — questo repo è SOLO per gli agenti del mega-agente AgenteLP
+- Qui vivono LUKA, REELS, ANDREA e le future funzioni dell'agente personale di Leonardo.
+- **Progetti che non sono un agente di AgenteLP** (giochi, automazioni email, siti, esperimenti…) **non vanno in questo repo**:
+  né in `functions/luka/` né in una nuova `functions/<nome>/`. Fermati e di' a Leonardo di avviare la sessione su un repo dedicato
+  (o chiedigli se vuoi crearlo tu). Non scrivere codice finché non risponde.
+
 ## Regola n.1 — una funzione = una cartella propria
 - Ogni agente/funzione vive in **`functions/<nome>/`**, con il suo backend, la sua UI e i suoi test, deployabile da solo.
 - **Mai** aggiungere un nuovo agente dentro `functions/luka/` (né file, né router, né pagina, né voce nella sidebar di LUKA).
