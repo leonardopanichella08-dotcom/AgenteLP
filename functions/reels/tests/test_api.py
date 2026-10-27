@@ -49,7 +49,7 @@ def test_upload_without_asr_gives_actionable_error(client, podcast):
         r = client.post("/api/projects", data={"mode": "long_form_extraction"}, files=[("files", ("podcast.mp4", f, "video/mp4"))])
     st = wait(client, r.json()["id"])
     assert st["status"] == "error" and st["error_kind"] == "asr_unavailable"
-    assert "DEEPGRAM_API_KEY" in st["error"] and "transcript.json" in st["error"]
+    assert "huggingface.co" in st["error"] and "GROQ_API_KEY" in st["error"]   # pesi Whisper non scaricabili: messaggio azionabile
 
 
 def test_upload_with_sidecar_transcript_full_flow(client, podcast, tmp_path):

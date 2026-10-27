@@ -16,6 +16,8 @@ rispetta, così l'estrazione futura è meccanica e non inventata.
 | **Shell UI** | sidebar sinistra (Dashboard, Funzioni, Profili, Settings) + workspace centrale; su mobile → bottom nav | `functions/luka/web/src/App.tsx` |
 | **Cifratura segreti** | token di terze parti cifrati a riposo con Fernet (`APP_ENCRYPTION_KEY`) | `functions/luka/app/crypto.py` |
 
+> Regola operativa (vedi `CLAUDE.md`): una funzione = una cartella `functions/<nome>/`; mai dentro `functions/luka/`.
+
 ## 2. Come si aggiunge una funzione
 
 1. `functions/<nome>/` con la stessa struttura di `luka/` (backend FastAPI +

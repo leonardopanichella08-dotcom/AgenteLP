@@ -6,3 +6,4 @@ numpy>=1.26
 opencv-python-headless>=4.9,<5
 httpx>=0.27
 anthropic>=0.40
+faster-whisper>=1.0   # ASR locale gratuito

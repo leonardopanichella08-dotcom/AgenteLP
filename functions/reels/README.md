@@ -12,7 +12,7 @@ Formati: **9:16** 1080×1920 (TikTok, Reels, Shorts, FB Reels) · **4:5** 1080×
 ```bash
 cd functions/reels
 pip install -r requirements-dev.txt          # serve anche ffmpeg (con libass) nel PATH
-python -m pytest                              # 39 test, ~2 min
+python -m pytest                              # 43 test, ~3 min
 uvicorn app.main:app --port 8000              # dashboard su http://localhost:8000
 ```
 
@@ -59,7 +59,7 @@ upload ─▶ probe ─▶ ASR (word-ts + diarizzazione) ─▶ audio envelope �
 
 | Stadio | Implementazione | Alternative consigliate in produzione |
 |---|---|---|
-| ASR + word-timestamps | `asr.py`: Deepgram (nova-2, diarize), OpenAI whisper-1, faster-whisper locale, sidecar JSON | WhisperX (+ forced alignment wav2vec2, ±20 ms) e pyannote per la diarizzazione |
+| ASR + word-timestamps | `asr.py`, in ordine: sidecar JSON → **Groq** whisper-large-v3-turbo (free tier) → Deepgram → OpenAI → **faster-whisper locale (gratis, senza chiavi)**; file lunghi spezzati sui silenzi veri | WhisperX (+ forced alignment wav2vec2, ±20 ms) e pyannote per la diarizzazione |
 | Forced alignment (A) | allineamento testuale su token ASR + gap analysis sull'audio | WhisperX / Montreal Forced Aligner se l'ASR sbaglia molte parole |
 | Voce vs silenzio | RMS 5 ms, soglia adattiva (`audio_analysis.py`) | Silero VAD per audio molto rumoroso |
 | Volti / active speaker | OpenCV Haar (4.x) + moto della zona-bocca + diarizzazione (`reframe.py`), interfaccia `FaceDetector` | MediaPipe / YuNet per i volti; TalkNet/Light-ASD per l'active speaker vero |
@@ -152,7 +152,7 @@ Dalla dashboard è impossibile mozzare una parola per sbaglio.
 
 ## 7. Cosa è stato testato (e cosa no)
 
-`python -m pytest` → 39 test. Media sintetici con **verità-terreno** (audio con parole brevi, dip d'ampiezza, "eh" non trascritti, pause lunghe, timestamp ASR con jitter ±100 ms), più un volto reale (foto *astronaut* di scikit-image).
+`python -m pytest` → 43 test. Media sintetici con **verità-terreno** (audio con parole brevi, dip d'ampiezza, "eh" non trascritti, pause lunghe, timestamp ASR con jitter ±100 ms), più un volto reale (foto *astronaut* di scikit-image).
 
 | Verificato | Come |
 |---|---|
@@ -170,7 +170,7 @@ Dalla dashboard è impossibile mozzare una parola per sbaglio.
 | API completa e dashboard in Chromium (demo A/B, nudge, swap take, render, download) | TestClient + Playwright, 0 errori JS |
 
 **Non verificato in questo ambiente** (rete verso HuggingFace/API ASR non raggiungibile, nessun volto-video reale, nessuna GPU):
-- ASR reali: i parser Deepgram/OpenAI sono testati su payload nel formato documentato, **non** su chiamate vere; Whisper locale non è stato eseguito.
+- **ASR reali: non ho potuto eseguire nessun ASR vero.** Da questo ambiente `huggingface.co` (pesi Whisper) e `api.groq.com` sono bloccati dal proxy. Sono testati: richieste/risposte Groq con HTTP simulato (header, parametri, retry sul limite free tier), chunking sui silenzi e ricomposizione degli offset, mappatura parole di faster-whisper con modello *simulato*, parser Deepgram/OpenAI su payload documentati. Il primo avvio reale scarica i pesi (small ≈ 500 MB, poi in cache).
 - Robustezza del rilevatore Haar su video reali (profili, occlusioni, più persone, illuminazione): per produzione sostituire con MediaPipe/YuNet + un vero active-speaker model dietro la stessa interfaccia `FaceDetector`.
 - Qualità del giudizio editoriale su contenuti reali (il virality score offline è euristico; con `ANTHROPIC_API_KEY` decide Claude, ma non ho potuto chiamarlo).
 - Emoji nei sottotitoli: servono un font emoji nel sistema (qui assente → le emoji vengono omesse automaticamente). I sottotitoli ASS hanno risoluzione di 10 ms (< 1 frame a 60 fps).
@@ -182,7 +182,9 @@ Dalla dashboard è impossibile mozzare una parola per sbaglio.
 
 | Variabile | Effetto |
 |---|---|
-| `DEEPGRAM_API_KEY` / `OPENAI_API_KEY` | provider ASR (in ordine); altrimenti faster-whisper se installato |
+| `GROQ_API_KEY` | ASR gratuito veloce (free tier, chiave gratis da console.groq.com) |
+| `REELS_ASR` / `REELS_WHISPER_MODEL` | forza `groq\|deepgram\|openai\|local`; modello locale (`tiny/base/small/medium`, default `small`) |
+| `DEEPGRAM_API_KEY` / `OPENAI_API_KEY` | provider ASR a pagamento (opzionali) |
 | `ANTHROPIC_API_KEY` (`REELS_LLM_MODEL`) | selezione editoriale e copy con Claude; senza, euristica offline |
 | `PEXELS_API_KEY` | b-roll |
 | `REELS_DATA_DIR` | dove salvare progetti e output (default `functions/reels/data`) |
