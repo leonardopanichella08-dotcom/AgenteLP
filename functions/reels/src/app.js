@@ -1,4 +1,3 @@
-import { upload, uploadPresigned } from '@vercel/blob/client';
 import { downloadZip } from 'client-zip';
 import { CATEGORIES, DISCARD, TREATMENTS } from './treatments.js';
 
@@ -140,7 +139,6 @@ const typeOf = (file) => file.type || EXT_TYPES[file.name.split('.').pop().toLow
 
 const failed = [];
 let health = null; // null = non ancora verificato, true = ok
-let uploadMode = 'presigned';
 
 function enqueue(fileList) {
   const files = [...fileList].filter(isMedia);
@@ -170,15 +168,17 @@ async function start() {
   } catch (err) {
     h = { ok: false, reason: 'network', error: err.message };
   }
-  if (h.ok) { health = true; uploadMode = h.mode || 'presigned'; pump(); return; }
+  if (h.ok) {
+    health = true;
+    if (h.corsError) console.warn('CORS non impostato automaticamente:', h.corsError);
+    pump();
+    return;
+  }
   health = null;
-  const quota = /quota/i.test(h.error || '');
-  const msg = quota
-    ? 'Spazio esaurito: l\'archivio Blob del piano gratuito Vercel (Hobby) è pieno (massimo 1 GB). I file restano in coda: serve più spazio prima di continuare.'
-    : {
+  const msg = {
     'no-api': 'Le funzioni del server non rispondono. Su Vercel il progetto deve avere Root Directory = functions/reels e Framework = Other, poi Redeploy.',
-    'no-token': 'Il sito non è collegato a un archivio Blob. Su Vercel: progetto → Storage → archivio Blob → Connect Project (scegli questo progetto, tutti gli ambienti) → poi Deployments → ⋯ → Redeploy.',
-    'write-failed': `L'archivio Blob rifiuta la scrittura (${h.error}). Se l'archivio è stato creato come "Private", creane uno nuovo con accesso "Public", collegalo al progetto, scollega quello vecchio e fai Redeploy.`,
+    'no-env': `Mancano le chiavi di Cloudflare R2 su Vercel: ${(h.missing || []).join(', ')}. Aggiungile in Settings → Environment Variables e fai Redeploy.`,
+    'write-failed': `Cloudflare R2 rifiuta la scrittura (${h.error}). Controlla che le chiavi e il nome del bucket su Vercel siano giusti, poi Redeploy.`,
   }[h.reason] || `Il server non risponde correttamente (${h.error || h.reason}).`;
   showUploadAlert(msg);
   for (const job of queue) job.state.textContent = 'in attesa (server non pronto)';
@@ -201,39 +201,45 @@ function pump() {
   renderUploadSummary();
 }
 
-// Quando il token non arriva, chiede direttamente al server il motivo esatto.
-async function explainTokenError(pathname) {
-  try {
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ type: uploadMode === 'token' ? 'blob.generate-client-token' : 'blob.generate-presigned-url', payload: { pathname, clientPayload: null, multipart: false } }),
-    });
-    const data = await res.json().catch(() => ({}));
-    return data.error || `HTTP ${res.status}`;
-  } catch (err) {
-    return err.message;
-  }
+async function getUploadUrl(pathname, file) {
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ pathname, contentType: typeOf(file), size: file.size }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.url) throw new Error(data.error || `HTTP ${res.status}`);
+  return data.url;
+}
+
+// PUT diretto su R2 con barra di avanzamento.
+function putFile(url, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url);
+    xhr.setRequestHeader('content-type', typeOf(file));
+    xhr.upload.onprogress = (e) => { if (e.lengthComputable) onProgress((e.loaded / e.total) * 100); };
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300
+      ? resolve()
+      : reject(new Error(`archivio: HTTP ${xhr.status} ${(xhr.responseText.match(/<Message>(.*?)<\/Message>/) || [])[1] || ''}`.trim())));
+    xhr.onerror = () => reject(new Error('rete o CORS del bucket non configurato'));
+    xhr.send(file);
+  });
 }
 
 async function uploadOne(job) {
   const { file, bar, state } = job;
   state.textContent = 'caricamento…';
   state.className = 'state';
+  state.title = '';
   bar.style.width = '0';
   const pathname = `media/${newId()}/${safeName(file.name)}`;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const send = uploadMode === 'token' ? upload : uploadPresigned;
-      await send(pathname, file, {
-        access: 'public',
-        handleUploadUrl: '/api/upload',
-        contentType: typeOf(file),
-        multipart: file.size > 30 * 1024 * 1024,
-        onUploadProgress: ({ percentage }) => {
-          bar.style.width = `${percentage}%`;
-          state.textContent = `${Math.round(percentage)}%`;
-        },
+      const url = await getUploadUrl(pathname, file);
+      await putFile(url, file, (pct) => {
+        bar.style.width = `${pct}%`;
+        state.textContent = `${Math.round(pct)}%`;
       });
       bar.style.width = '100%';
       state.textContent = 'caricato ✓';
@@ -242,14 +248,13 @@ async function uploadOne(job) {
       return;
     } catch (err) {
       if (attempt === 3) {
-        let msg = err.message.replace(/^Vercel Blob:\s*/, '');
-        if (/client token|presigned/i.test(msg)) msg = await explainTokenError(pathname);
-        state.textContent = `errore: ${msg}`;
-        state.title = msg;
+        state.textContent = `errore: ${err.message}`;
+        state.title = err.message;
         state.className = 'state err';
         failed.push(job);
       } else {
         state.textContent = `riprovo (${attempt + 1}/3)…`;
+        await new Promise((r) => setTimeout(r, 1500 * attempt));
       }
     }
   }

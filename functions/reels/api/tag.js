@@ -1,5 +1,4 @@
-import { put, del, list } from '@vercel/blob';
-import { ACCESS, ID_RE, json, blobOpts } from './_lib.js';
+import { listAll, putSmall, deleteKeys, ID_RE, json } from './_store.js';
 import { isValidTreatment } from '../src/treatments.js';
 
 // Assegna (o rimuove, con treatment = null) il trattamento di un media.
@@ -9,19 +8,15 @@ export async function POST(request) {
   if (treatment !== null && !isValidTreatment(treatment)) {
     return json({ error: 'trattamento non valido' }, 400);
   }
-
-  const existing = await list({ prefix: `tags/${id}/`, ...blobOpts() });
-  const stale = existing.blobs.filter((b) => b.pathname !== `tags/${id}/${treatment}`);
-  if (stale.length) await del(stale.map((b) => b.url), blobOpts());
-
-  if (treatment && stale.length === existing.blobs.length) {
-    await put(`tags/${id}/${treatment}`, '1', {
-      access: ACCESS,
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: 'text/plain',
-      ...blobOpts(),
-    });
+  try {
+    const target = `tags/${id}/${treatment}`;
+    const existing = await listAll(`tags/${id}/`);
+    const stale = existing.filter((o) => o.key !== target).map((o) => o.key);
+    if (stale.length) await deleteKeys(stale);
+    if (treatment && !existing.some((o) => o.key === target)) await putSmall(target, '1');
+    return json({ id, treatment });
+  } catch (err) {
+    console.error('tag error:', err);
+    return json({ error: err.message }, 500);
   }
-  return json({ id, treatment });
 }

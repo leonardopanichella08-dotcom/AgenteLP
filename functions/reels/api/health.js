@@ -1,25 +1,21 @@
-import { put, del } from '@vercel/blob';
-import { ACCESS, json, blobOpts, blobToken } from './_lib.js';
+import { missingEnv, ensureCors, putSmall, deleteKeys, json } from './_store.js';
 
-// Controllo di configurazione: si riesce a scrivere sul Blob store?
-// `mode` dice al browser quale metodo di caricamento usare.
+// Controllo configurazione prima di caricare: chiavi presenti, CORS impostato,
+// scrittura possibile.
 export async function GET() {
-  const mode = blobToken() ? 'token' : 'presigned';
-  const blobVars = Object.keys(process.env).filter((k) => /BLOB/i.test(k));
-  if (mode === 'presigned' && !process.env.BLOB_STORE_ID) {
-    return json({ ok: false, reason: 'no-token', blobVars });
+  const missing = missingEnv();
+  if (missing.length) return json({ ok: false, reason: 'no-env', missing });
+  let corsError = null;
+  try {
+    await ensureCors();
+  } catch (err) {
+    corsError = err.message; // es. chiave senza permessi Admin: CORS va impostato a mano
   }
   try {
-    const b = await put('health/ping.txt', 'ok', {
-      access: ACCESS,
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: 'text/plain',
-      ...blobOpts(),
-    });
-    await del(b.url, blobOpts());
-    return json({ ok: true, mode });
+    await putSmall('health/ping.txt', 'ok');
+    await deleteKeys(['health/ping.txt']);
   } catch (err) {
-    return json({ ok: false, reason: 'write-failed', error: err.message, mode, blobVars });
+    return json({ ok: false, reason: 'write-failed', error: `${err.name}: ${err.message}` });
   }
+  return json({ ok: true, corsError });
 }
