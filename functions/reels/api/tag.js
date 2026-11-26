@@ -1,5 +1,5 @@
 import { put, del, list } from '@vercel/blob';
-import { ACCESS, ID_RE, json } from './_lib.js';
+import { ACCESS, ID_RE, json, blobOpts } from './_lib.js';
 import { isValidTreatment } from '../src/treatments.js';
 
 // Assegna (o rimuove, con treatment = null) il trattamento di un media.
@@ -10,9 +10,9 @@ export async function POST(request) {
     return json({ error: 'trattamento non valido' }, 400);
   }
 
-  const existing = await list({ prefix: `tags/${id}/` });
+  const existing = await list({ prefix: `tags/${id}/`, ...blobOpts() });
   const stale = existing.blobs.filter((b) => b.pathname !== `tags/${id}/${treatment}`);
-  if (stale.length) await del(stale.map((b) => b.url));
+  if (stale.length) await del(stale.map((b) => b.url), blobOpts());
 
   if (treatment && stale.length === existing.blobs.length) {
     await put(`tags/${id}/${treatment}`, '1', {
@@ -20,6 +20,7 @@ export async function POST(request) {
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: 'text/plain',
+      ...blobOpts(),
     });
   }
   return json({ id, treatment });

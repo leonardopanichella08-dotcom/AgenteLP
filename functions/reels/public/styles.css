@@ -202,3 +202,7 @@ dialog input {
   background: var(--panel-2); border: 1px solid var(--line); padding: 10px 14px; border-radius: 10px;
   max-width: calc(100% - 32px);
 }
+
+.alert { border: 1px solid var(--danger); background: #ef44441a; border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
+.alert p { margin: 0 0 10px; }
+.queue .state { max-width: 55vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; }

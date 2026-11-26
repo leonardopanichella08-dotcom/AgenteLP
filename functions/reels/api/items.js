@@ -1,12 +1,12 @@
 import { list } from '@vercel/blob';
-import { json } from './_lib.js';
+import { json, blobOpts } from './_lib.js';
 import { isValidTreatment } from '../src/treatments.js';
 
 async function listAll(prefix) {
   const out = [];
   let cursor;
   do {
-    const page = await list({ prefix, cursor, limit: 1000 });
+    const page = await list({ prefix, cursor, limit: 1000, ...blobOpts() });
     out.push(...page.blobs);
     cursor = page.hasMore ? page.cursor : undefined;
   } while (cursor);

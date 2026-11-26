@@ -131,6 +131,16 @@ function newId() {
   return `${Date.now().toString(36)}-${rnd}`;
 }
 
+const EXT_TYPES = {
+  mov: 'video/quicktime', mp4: 'video/mp4', m4v: 'video/x-m4v', avi: 'video/x-msvideo', mkv: 'video/x-matroska',
+  '3gp': 'video/3gpp', webm: 'video/webm', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+  webp: 'image/webp', gif: 'image/gif', heic: 'image/heic', heif: 'image/heif',
+};
+const typeOf = (file) => file.type || EXT_TYPES[file.name.split('.').pop().toLowerCase()] || 'application/octet-stream';
+
+const failed = [];
+let health = null; // null = non ancora verificato, true = ok
+
 function enqueue(fileList) {
   const files = [...fileList].filter(isMedia);
   const skipped = fileList.length - files.length;
@@ -142,8 +152,41 @@ function enqueue(fileList) {
     $('#queue').prepend(li);
     queue.push({ file, bar, state });
   }
-  pump();
+  start();
 }
+
+// Prima di caricare controlla che il server sia configurato: se non lo è,
+// mostra il motivo e lascia i file in coda invece di farli fallire tutti.
+async function start() {
+  if (health === true) return pump();
+  if (health === 'checking') return;
+  health = 'checking';
+  showUploadAlert('');
+  let h;
+  try {
+    const res = await fetch('/api/health', { cache: 'no-store' });
+    h = res.ok ? await res.json() : { ok: false, reason: res.status === 404 ? 'no-api' : 'http', error: `HTTP ${res.status}` };
+  } catch (err) {
+    h = { ok: false, reason: 'network', error: err.message };
+  }
+  if (h.ok) { health = true; pump(); return; }
+  health = null;
+  const msg = {
+    'no-api': 'Le funzioni del server non rispondono. Su Vercel il progetto deve avere Root Directory = functions/reels e Framework = Other, poi Redeploy.',
+    'no-token': 'Il sito non è collegato a un archivio Blob. Su Vercel: progetto → Storage → archivio Blob → Connect Project (scegli questo progetto, tutti gli ambienti) → poi Deployments → ⋯ → Redeploy.',
+    'write-failed': `L'archivio Blob rifiuta la scrittura (${h.error}). Se l'archivio è stato creato come "Private", creane uno nuovo con accesso "Public", collegalo al progetto, scollega quello vecchio e fai Redeploy.`,
+  }[h.reason] || `Il server non risponde correttamente (${h.error || h.reason}).`;
+  showUploadAlert(msg);
+  for (const job of queue) job.state.textContent = 'in attesa (server non pronto)';
+  renderUploadSummary();
+}
+
+function showUploadAlert(msg) {
+  const box = $('#upload-alert');
+  box.hidden = !msg;
+  $('#upload-alert-text').textContent = msg;
+}
+$('#upload-retry-check').addEventListener('click', () => { health = null; start(); });
 
 function pump() {
   while (running < CONCURRENCY && queue.length) {
@@ -154,15 +197,33 @@ function pump() {
   renderUploadSummary();
 }
 
-async function uploadOne({ file, bar, state }) {
+// Quando il token non arriva, chiede direttamente al server il motivo esatto.
+async function explainTokenError(pathname) {
+  try {
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ type: 'blob.generate-client-token', payload: { pathname, clientPayload: null, multipart: false } }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return data.error || `HTTP ${res.status}`;
+  } catch (err) {
+    return err.message;
+  }
+}
+
+async function uploadOne(job) {
+  const { file, bar, state } = job;
   state.textContent = 'caricamento…';
+  state.className = 'state';
+  bar.style.width = '0';
   const pathname = `media/${newId()}/${safeName(file.name)}`;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: '/api/upload',
-        contentType: file.type || undefined,
+        contentType: typeOf(file),
         multipart: file.size > 30 * 1024 * 1024,
         onUploadProgress: ({ percentage }) => {
           bar.style.width = `${percentage}%`;
@@ -176,9 +237,12 @@ async function uploadOne({ file, bar, state }) {
       return;
     } catch (err) {
       if (attempt === 3) {
-        state.textContent = `errore: ${err.message}`;
+        let msg = err.message.replace(/^Vercel Blob:\s*/, '');
+        if (/client token/i.test(msg)) msg = await explainTokenError(pathname);
+        state.textContent = `errore: ${msg}`;
+        state.title = msg;
         state.className = 'state err';
-        failedCount++;
+        failed.push(job);
       } else {
         state.textContent = `riprovo (${attempt + 1}/3)…`;
       }
@@ -186,15 +250,21 @@ async function uploadOne({ file, bar, state }) {
   }
 }
 let uploadedCount = 0;
-let failedCount = 0;
 function renderUploadSummary() {
   const pending = queue.length + running;
   const parts = [];
-  if (pending) parts.push(`${pending} in caricamento`);
+  if (pending) parts.push(`${pending} in coda`);
   if (uploadedCount) parts.push(`${uploadedCount} caricati in questa sessione`);
-  if (failedCount) parts.push(`${failedCount} non riusciti`);
+  if (failed.length) parts.push(`${failed.length} non riusciti`);
   $('#upload-summary').textContent = parts.join(' · ');
+  $('#retry-failed').hidden = !failed.length || pending > 0;
 }
+$('#retry-failed').addEventListener('click', () => {
+  const jobs = failed.splice(0);
+  for (const job of jobs) { job.state.textContent = 'in coda'; job.state.className = 'state'; queue.push(job); }
+  health = null;
+  start();
+});
 
 const drop = $('#drop');
 $('#file-input').addEventListener('change', (e) => { enqueue(e.target.files); e.target.value = ''; });

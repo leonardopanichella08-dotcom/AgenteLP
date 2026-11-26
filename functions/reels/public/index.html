@@ -35,7 +35,14 @@
           <button class="btn ghost" id="pick-folder">Scegli una cartella intera</button>
           <input type="file" id="folder-input" webkitdirectory multiple hidden />
         </div>
-        <p class="muted" id="upload-summary"></p>
+        <div class="alert" id="upload-alert" hidden>
+          <p id="upload-alert-text"></p>
+          <button class="btn small" id="upload-retry-check">Ho sistemato, riprova</button>
+        </div>
+        <div class="row between">
+          <p class="muted" id="upload-summary"></p>
+          <button class="btn small" id="retry-failed" hidden>Riprova i non riusciti</button>
+        </div>
         <ul class="queue" id="queue"></ul>
       </div>
     </section>

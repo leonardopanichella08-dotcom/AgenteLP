@@ -1,5 +1,5 @@
 import { handleUpload } from '@vercel/blob/client';
-import { json } from './_lib.js';
+import { json, blobToken } from './_lib.js';
 
 const PATH_RE = /^media\/[a-z0-9-]{8,40}\/[^/]{1,200}$/;
 
@@ -11,6 +11,7 @@ export async function POST(request) {
     const result = await handleUpload({
       body,
       request,
+      token: blobToken(),
       onBeforeGenerateToken: async (pathname) => {
         if (!PATH_RE.test(pathname)) throw new Error('Percorso non valido');
         return {
@@ -23,6 +24,7 @@ export async function POST(request) {
     });
     return json(result);
   } catch (err) {
+    console.error('upload token error:', err);
     return json({ error: err.message }, 400);
   }
 }
