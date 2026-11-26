@@ -28,6 +28,14 @@ function toast(msg, ms = 3000) {
   if (ms) toastTimer = setTimeout(() => (t.hidden = true), ms);
 }
 
+// ---------- niente zoom su smartphone ----------
+// iOS Safari ignora user-scalable=no: blocchiamo pinch e doppio tocco a mano.
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
+}
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+// Il doppio tocco è già disattivato da touch-action nel CSS.
+
 // ---------- API ----------
 async function api(path, body) {
   const res = await fetch(path, {

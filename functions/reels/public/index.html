@@ -2,7 +2,11 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
   <meta name="theme-color" content="#0b0b0c" />
   <title>Reels Trattamenti</title>
   <link rel="stylesheet" href="/styles.css" />
@@ -27,12 +31,14 @@
       <div class="wrap">
         <label class="drop" id="drop">
           <input type="file" id="file-input" accept="image/*,video/*" multiple hidden />
-          <strong>Trascina qui foto e video</strong>
-          <span>oppure tocca per sceglierli</span>
+          <strong class="desk">Trascina qui foto e video</strong>
+          <span class="desk">oppure clicca per sceglierli</span>
+          <strong class="touch">Tocca per scegliere foto e video</strong>
+          <span class="touch">dalla galleria o dai file</span>
         </label>
         <div class="row">
           <button class="btn" id="pick-files">Scegli file</button>
-          <button class="btn ghost" id="pick-folder">Scegli una cartella intera</button>
+          <button class="btn ghost desk" id="pick-folder">Scegli una cartella intera</button>
           <input type="file" id="folder-input" webkitdirectory multiple hidden />
         </div>
         <div class="alert" id="upload-alert" hidden>
