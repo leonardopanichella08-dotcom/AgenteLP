@@ -11,6 +11,7 @@
   --warn: #f59e0b;
   --danger: #ef4444;
   --topbar: 52px;
+  --strip: 44px;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -43,7 +44,16 @@ button { cursor: pointer; }
 }
 .badge:empty { display: none; }
 
-main { height: calc(100dvh - var(--topbar)); }
+main { height: calc(100dvh - var(--topbar) - var(--strip)); }
+.progress {
+  height: var(--strip); padding: 6px 16px; border-bottom: 1px solid var(--line); background: var(--panel);
+  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+}
+.progress-row { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; white-space: nowrap; overflow: hidden; }
+.progress-row span { overflow: hidden; text-overflow: ellipsis; }
+.progress-bar { height: 5px; background: var(--panel-2); border-radius: 5px; overflow: hidden; }
+.progress-bar > i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .3s; }
+.error { color: var(--danger); font-size: 13px; margin: 0 0 8px; min-height: 1em; }
 .view { display: none; height: 100%; }
 .view.active { display: block; }
 .wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; height: 100%; overflow-y: auto; }
@@ -185,7 +195,7 @@ dialog {
 dialog::backdrop { background: #000c; }
 dialog h3 { margin: 0 0 4px; }
 dialog input {
-  width: 100%; margin: 12px 0; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2);
+  width: 100%; margin: 8px 0; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2);
 }
 .toast {
   position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 50;

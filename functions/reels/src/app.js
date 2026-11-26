@@ -29,17 +29,19 @@ function toast(msg, ms = 3000) {
   if (ms) toastTimer = setTimeout(() => (t.hidden = true), ms);
 }
 
-// ---------- password + API ----------
-let password = store.get('reels-pw') || '';
+// ---------- accesso + API ----------
+let creds = { u: store.get('reels-user') || '', p: store.get('reels-pw') || '' };
 
-function askPassword() {
+function askLogin(errorMsg) {
   return new Promise((resolve) => {
     const dlg = $('#pw-dialog');
-    const input = $('#pw-input');
-    input.value = '';
+    $('#user-input').value = creds.u;
+    $('#pw-input').value = '';
+    $('#pw-error').textContent = errorMsg || '';
     dlg.addEventListener('close', () => {
-      password = input.value;
-      store.set('reels-pw', password);
+      creds = { u: $('#user-input').value.trim(), p: $('#pw-input').value };
+      store.set('reels-user', creds.u);
+      store.set('reels-pw', creds.p);
       resolve();
     }, { once: true });
     dlg.showModal();
@@ -47,13 +49,23 @@ function askPassword() {
 }
 
 async function api(path, body) {
+  let tried = false;
   for (;;) {
     const res = await fetch(path, {
       method: body ? 'POST' : 'GET',
-      headers: { 'x-app-password': password, ...(body ? { 'content-type': 'application/json' } : {}) },
+      headers: {
+        'x-app-user': creds.u,
+        'x-app-password': creds.p,
+        ...(body ? { 'content-type': 'application/json' } : {}),
+      },
       body: body ? JSON.stringify(body) : undefined,
     });
-    if (res.status === 401) { await askPassword(); continue; }
+    if (res.status === 401) {
+      const err = (await res.json().catch(() => ({}))).error;
+      await askLogin(err === 'config' ? 'Accesso non configurato sul server (APP_USERNAME / APP_PASSWORD).' : tried || creds.p ? 'Username o password errati.' : '');
+      tried = true;
+      continue;
+    }
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Errore ${res.status}`);
     return res.json();
   }
@@ -68,18 +80,51 @@ const treatmentFull = (id) => {
   return !t ? '' : t.category ? `${t.category} · ${t.label}` : t.label;
 };
 
+// Aggiorna la lista mantenendo gli stessi oggetti (il feed aperto continua a puntarli).
 async function loadItems() {
   const data = await api('/api/items');
-  items = data.items;
-  byId.clear();
-  for (const it of items) byId.set(it.id, it);
+  const fresh = new Set();
+  const next = [];
+  for (const it of data.items) {
+    fresh.add(it.id);
+    const cur = byId.get(it.id);
+    if (cur) { if (!cur.saving) cur.treatment = it.treatment; next.push(cur); }
+    else { byId.set(it.id, it); next.push(it); }
+  }
+  for (const id of [...byId.keys()]) if (!fresh.has(id)) byId.delete(id);
+  items = next;
   updateBadge();
 }
 function updateBadge() {
   const todo = items.filter((i) => !i.treatment).length;
   $('#todo-badge').textContent = todo ? String(todo) : '';
   if (currentTab === 'tag') buildFilterOptions();
+  renderProgress();
 }
+
+// Avanzamento visibile a tutti, su ogni scheda.
+function renderProgress() {
+  const total = items.length;
+  const done = items.filter((i) => i.treatment).length;
+  const discarded = items.filter((i) => i.treatment === DISCARD.id).length;
+  const vids = items.filter((i) => i.kind === 'video');
+  const pics = items.filter((i) => i.kind !== 'video');
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  $('#progress-text').textContent = total
+    ? `Smistati ${done} su ${total} (${pct}%)`
+    : 'Nessun file caricato';
+  const det = [];
+  if (vids.length) det.push(`video ${vids.filter((i) => i.treatment).length}/${vids.length}`);
+  if (pics.length) det.push(`foto ${pics.filter((i) => i.treatment).length}/${pics.length}`);
+  if (discarded) det.push(`${discarded} scartati`);
+  $('#progress-detail').textContent = det.join(' · ');
+  $('#progress-fill').style.width = `${pct}%`;
+}
+
+// Ricarica ogni 30 s per vedere il lavoro degli altri.
+setInterval(() => {
+  if (document.visibilityState === 'visible') loadItems().catch(() => {});
+}, 30_000);
 
 // ---------- tabs ----------
 let currentTab = null;
@@ -148,7 +193,7 @@ async function uploadOne({ file, bar, state }) {
       await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: '/api/upload',
-        clientPayload: password,
+        clientPayload: JSON.stringify(creds),
         contentType: file.type || undefined,
         multipart: file.size > 30 * 1024 * 1024,
         onUploadProgress: ({ percentage }) => {
@@ -162,7 +207,7 @@ async function uploadOne({ file, bar, state }) {
       uploadedCount++;
       return;
     } catch (err) {
-      if (/password/i.test(err.message)) { await askPassword(); attempt--; continue; }
+      if (/accesso negato/i.test(err.message)) { await askLogin('Username o password errati.'); attempt--; continue; }
       if (attempt === 3) {
         state.textContent = `errore: ${err.message}`;
         state.className = 'state err';
@@ -402,9 +447,13 @@ async function choose(treatment) {
   renderPicker();
   updateBadge();
   if (next) setTimeout(() => goTo(i + 1), 250);
+  it.saving = true;
   try {
     await api('/api/tag', { id: it.id, treatment: next });
+    it.saving = false;
+    renderProgress();
   } catch (err) {
+    it.saving = false;
     it.treatment = prev;
     renderSlideMeta(i);
     if (activeIndex === i) renderPicker();

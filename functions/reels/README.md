@@ -14,6 +14,9 @@ Tool per smistare foto e video per trattamento.
    scaricare lo **ZIP della cartella** / **ZIP di tutto** (una sottocartella per
    trattamento, gli scartati esclusi).
 
+In alto, su ogni scheda, una barra mostra a tutti quanti file sono già
+smistati (totale, video, foto, scartati); si aggiorna da sola ogni 30 secondi.
+
 L'elenco dei trattamenti è in [`src/treatments.js`](src/treatments.js).
 
 ## Deploy su Vercel
@@ -22,9 +25,9 @@ L'elenco dei trattamenti è in [`src/treatments.js`](src/treatments.js).
    (il resto è già in `vercel.json`).
 2. Progetto → **Storage** → **Create** → **Blob**, accesso **Public**, e
    collegalo al progetto: Vercel aggiunge da solo `BLOB_READ_WRITE_TOKEN`.
-3. (Consigliato) **Settings → Environment Variables**: `APP_PASSWORD` = una
-   password da dare a chi carica e classifica. Senza, il sito è aperto a chi
-   ha il link.
+3. **Settings → Environment Variables**: `APP_USERNAME` e `APP_PASSWORD`
+   (le credenziali condivise per entrare; lo username non distingue
+   maiuscole/minuscole). Senza queste due variabili il sito resta chiuso.
 4. Redeploy.
 
 ## Come sono salvati i dati

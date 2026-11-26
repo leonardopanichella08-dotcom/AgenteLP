@@ -16,6 +16,10 @@
       <button data-tab="folders" role="tab">Cartelle</button>
     </nav>
   </header>
+  <div class="progress" aria-live="polite">
+    <div class="progress-row"><strong id="progress-text">…</strong><span id="progress-detail" class="muted"></span></div>
+    <div class="progress-bar"><i id="progress-fill"></i></div>
+  </div>
 
   <main>
     <!-- CARICA -->
@@ -76,9 +80,11 @@
 
   <dialog id="pw-dialog">
     <form method="dialog" id="pw-form">
-      <h3>Password</h3>
-      <p class="muted">Inserisci la password condivisa per accedere.</p>
-      <input type="password" id="pw-input" autocomplete="current-password" required />
+      <h3>Accedi</h3>
+      <p class="muted">Inserisci username e password per entrare.</p>
+      <input type="text" id="user-input" placeholder="Username" autocomplete="username" autocapitalize="off" spellcheck="false" required />
+      <input type="password" id="pw-input" placeholder="Password" autocomplete="current-password" required />
+      <p class="error" id="pw-error"></p>
       <button class="btn" type="submit">Entra</button>
     </form>
   </dialog>

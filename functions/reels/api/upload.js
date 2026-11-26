@@ -1,5 +1,5 @@
 import { handleUpload } from '@vercel/blob/client';
-import { checkPassword, json } from './_lib.js';
+import { checkCredentials, json } from './_lib.js';
 
 const PATH_RE = /^media\/[a-z0-9-]{8,40}\/[^/]{1,200}$/;
 
@@ -12,7 +12,9 @@ export async function POST(request) {
       body,
       request,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        if (!checkPassword(clientPayload || '')) throw new Error('Password errata');
+        let c = {};
+        try { c = JSON.parse(clientPayload || '{}'); } catch { /* vuoto */ }
+        if (!checkCredentials(c.u || '', c.p || '')) throw new Error('Accesso negato');
         if (!PATH_RE.test(pathname)) throw new Error('Percorso non valido');
         return {
           allowedContentTypes: ['image/*', 'video/*'],
