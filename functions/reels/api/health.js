@@ -1,11 +1,12 @@
 import { put, del } from '@vercel/blob';
-import { ACCESS, json, blobToken } from './_lib.js';
+import { ACCESS, json, blobOpts, blobToken } from './_lib.js';
 
-// Controllo di configurazione: c'è il token del Blob store e si riesce a scrivere?
+// Controllo di configurazione: si riesce a scrivere sul Blob store?
+// `mode` dice al browser quale metodo di caricamento usare.
 export async function GET() {
-  const token = blobToken();
+  const mode = blobToken() ? 'token' : 'presigned';
   const blobVars = Object.keys(process.env).filter((k) => /BLOB/i.test(k));
-  if (!token) {
+  if (mode === 'presigned' && !process.env.BLOB_STORE_ID) {
     return json({ ok: false, reason: 'no-token', blobVars });
   }
   try {
@@ -14,11 +15,11 @@ export async function GET() {
       addRandomSuffix: false,
       allowOverwrite: true,
       contentType: 'text/plain',
-      token,
+      ...blobOpts(),
     });
-    await del(b.url, { token });
-    return json({ ok: true });
+    await del(b.url, blobOpts());
+    return json({ ok: true, mode });
   } catch (err) {
-    return json({ ok: false, reason: 'write-failed', error: err.message, blobVars });
+    return json({ ok: false, reason: 'write-failed', error: err.message, mode, blobVars });
   }
 }

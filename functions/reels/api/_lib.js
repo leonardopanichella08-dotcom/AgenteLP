@@ -21,4 +21,4 @@ export function blobToken() {
   return hit ? hit[1] : undefined;
 }
 
-export const blobOpts = () => ({ token: blobToken() });
+export const blobOpts = () => (blobToken() ? { token: blobToken() } : {});

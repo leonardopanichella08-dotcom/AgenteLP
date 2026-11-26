@@ -1,4 +1,4 @@
-import { upload } from '@vercel/blob/client';
+import { upload, uploadPresigned } from '@vercel/blob/client';
 import { downloadZip } from 'client-zip';
 import { CATEGORIES, DISCARD, TREATMENTS } from './treatments.js';
 
@@ -140,6 +140,7 @@ const typeOf = (file) => file.type || EXT_TYPES[file.name.split('.').pop().toLow
 
 const failed = [];
 let health = null; // null = non ancora verificato, true = ok
+let uploadMode = 'presigned';
 
 function enqueue(fileList) {
   const files = [...fileList].filter(isMedia);
@@ -169,7 +170,7 @@ async function start() {
   } catch (err) {
     h = { ok: false, reason: 'network', error: err.message };
   }
-  if (h.ok) { health = true; pump(); return; }
+  if (h.ok) { health = true; uploadMode = h.mode || 'presigned'; pump(); return; }
   health = null;
   const msg = {
     'no-api': 'Le funzioni del server non rispondono. Su Vercel il progetto deve avere Root Directory = functions/reels e Framework = Other, poi Redeploy.',
@@ -203,7 +204,7 @@ async function explainTokenError(pathname) {
     const res = await fetch('/api/upload', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ type: 'blob.generate-client-token', payload: { pathname, clientPayload: null, multipart: false } }),
+      body: JSON.stringify({ type: uploadMode === 'token' ? 'blob.generate-client-token' : 'blob.generate-presigned-url', payload: { pathname, clientPayload: null, multipart: false } }),
     });
     const data = await res.json().catch(() => ({}));
     return data.error || `HTTP ${res.status}`;
@@ -220,7 +221,8 @@ async function uploadOne(job) {
   const pathname = `media/${newId()}/${safeName(file.name)}`;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      await upload(pathname, file, {
+      const send = uploadMode === 'token' ? upload : uploadPresigned;
+      await send(pathname, file, {
         access: 'public',
         handleUploadUrl: '/api/upload',
         contentType: typeOf(file),
@@ -238,7 +240,7 @@ async function uploadOne(job) {
     } catch (err) {
       if (attempt === 3) {
         let msg = err.message.replace(/^Vercel Blob:\s*/, '');
-        if (/client token/i.test(msg)) msg = await explainTokenError(pathname);
+        if (/client token|presigned/i.test(msg)) msg = await explainTokenError(pathname);
         state.textContent = `errore: ${msg}`;
         state.title = msg;
         state.className = 'state err';
