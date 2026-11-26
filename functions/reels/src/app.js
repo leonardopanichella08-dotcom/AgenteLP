@@ -172,7 +172,10 @@ async function start() {
   }
   if (h.ok) { health = true; uploadMode = h.mode || 'presigned'; pump(); return; }
   health = null;
-  const msg = {
+  const quota = /quota/i.test(h.error || '');
+  const msg = quota
+    ? 'Spazio esaurito: l\'archivio Blob del piano gratuito Vercel (Hobby) è pieno (massimo 1 GB). I file restano in coda: serve più spazio prima di continuare.'
+    : {
     'no-api': 'Le funzioni del server non rispondono. Su Vercel il progetto deve avere Root Directory = functions/reels e Framework = Other, poi Redeploy.',
     'no-token': 'Il sito non è collegato a un archivio Blob. Su Vercel: progetto → Storage → archivio Blob → Connect Project (scegli questo progetto, tutti gli ambienti) → poi Deployments → ⋯ → Redeploy.',
     'write-failed': `L'archivio Blob rifiuta la scrittura (${h.error}). Se l'archivio è stato creato come "Private", creane uno nuovo con accesso "Public", collegalo al progetto, scollega quello vecchio e fai Redeploy.`,
