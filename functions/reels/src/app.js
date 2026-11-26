@@ -53,15 +53,17 @@ async function loadItems() {
   const data = await api('/api/items');
   const fresh = new Set();
   const next = [];
+  const added = [];
   for (const it of data.items) {
     fresh.add(it.id);
     const cur = byId.get(it.id);
     if (cur) { if (!cur.saving) cur.treatment = it.treatment; next.push(cur); }
-    else { byId.set(it.id, it); next.push(it); }
+    else { byId.set(it.id, it); next.push(it); added.push(it); }
   }
   for (const id of [...byId.keys()]) if (!fresh.has(id)) byId.delete(id);
   items = next;
   updateBadge();
+  if (currentTab === 'tag' && feedItems.length) appendToFeed(added.filter(matches));
 }
 function updateBadge() {
   const todo = items.filter((i) => !i.treatment).length;
@@ -312,7 +314,7 @@ const feed = $('#feed');
 let feedItems = [];
 let activeIndex = -1;
 let soundOn = false;
-let filter = 'todo';
+let filter = 'all';
 let pendingStartId = null;
 let activeCat = CATEGORIES[0].id;
 
@@ -320,8 +322,8 @@ function buildFilterOptions() {
   const sel = $('#filter');
   const count = (fn) => items.filter(fn).length;
   sel.replaceChildren(
-    el('option', { value: 'todo', text: `Da classificare (${count((i) => !i.treatment)})` }),
     el('option', { value: 'all', text: `Tutti (${items.length})` }),
+    el('option', { value: 'todo', text: `Da classificare (${count((i) => !i.treatment)})` }),
     el('option', { value: 'done', text: `Già classificati (${count((i) => i.treatment)})` }),
   );
   for (const c of CATEGORIES) {
@@ -334,7 +336,7 @@ function buildFilterOptions() {
   }
   const nd = count((i) => i.treatment === DISCARD.id);
   if (nd) sel.append(el('option', { value: `t:${DISCARD.id}`, text: `${DISCARD.label} (${nd})` }));
-  if (![...sel.options].some((o) => o.value === filter)) filter = 'todo';
+  if (![...sel.options].some((o) => o.value === filter)) filter = 'all';
   sel.value = filter;
 }
 $('#filter').addEventListener('change', (e) => { filter = e.target.value; buildFeed(); });
@@ -373,7 +375,9 @@ function buildFeed() {
     observer.observe(slide);
     feed.append(slide);
   });
-  let start = 0;
+  // Si riparte dal primo file ancora da smistare: sopra restano quelli già
+  // fatti, raggiungibili tornando indietro.
+  let start = Math.max(0, feedItems.findIndex((i) => !i.treatment));
   if (pendingStartId) {
     start = Math.max(0, feedItems.findIndex((i) => i.id === pendingStartId));
     pendingStartId = null;
@@ -381,6 +385,19 @@ function buildFeed() {
   feed.scrollTop = 0;
   if (start) feed.scrollTop = feed.children[start].offsetTop;
   setActive(start);
+}
+
+// File caricati da altri mentre si sta smistando: compaiono in fondo al feed.
+function appendToFeed(list) {
+  for (const it of list) {
+    const i = feedItems.length;
+    feedItems.push(it);
+    const slide = el('div', { class: 'slide', 'data-index': i });
+    observer?.observe(slide);
+    feed.append(slide);
+    if (Math.abs(i - activeIndex) <= 2) mountSlide(i);
+  }
+  if (list.length) $('#feed-pos').textContent = `${activeIndex + 1} / ${feedItems.length}`;
 }
 
 function mountSlide(i) {
@@ -473,9 +490,11 @@ function renderPicker() {
   d.classList.toggle('selected', it?.treatment === DISCARD.id);
   d.disabled = !it;
   $('#skip-btn').disabled = !it;
+  $('#back-btn').disabled = !it || activeIndex <= 0;
 }
 $('#discard-btn').addEventListener('click', () => choose(DISCARD.id));
 $('#skip-btn').addEventListener('click', () => goTo(activeIndex + 1));
+$('#back-btn').addEventListener('click', () => goTo(activeIndex - 1));
 
 function goTo(i) {
   const slide = feed.children[i];
