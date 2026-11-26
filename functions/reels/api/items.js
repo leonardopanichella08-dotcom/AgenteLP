@@ -1,5 +1,5 @@
 import { list } from '@vercel/blob';
-import { authorized, unauthorized, json } from './_lib.js';
+import { json } from './_lib.js';
 import { isValidTreatment } from '../src/treatments.js';
 
 async function listAll(prefix) {
@@ -17,8 +17,7 @@ const VIDEO_EXT = /\.(mp4|mov|m4v|webm|3gp|avi|mkv|hevc)$/i;
 
 // Elenco di tutti i media con il trattamento assegnato.
 // Media: media/<id>/<nome file>   Tag: tags/<id>/<trattamento>
-export async function GET(request) {
-  if (!authorized(request)) return unauthorized();
+export async function GET() {
   const [media, tags] = await Promise.all([listAll('media/'), listAll('tags/')]);
 
   const tagById = new Map();

@@ -1,10 +1,9 @@
 import { put, del, list } from '@vercel/blob';
-import { ACCESS, ID_RE, authorized, unauthorized, json } from './_lib.js';
+import { ACCESS, ID_RE, json } from './_lib.js';
 import { isValidTreatment } from '../src/treatments.js';
 
 // Assegna (o rimuove, con treatment = null) il trattamento di un media.
 export async function POST(request) {
-  if (!authorized(request)) return unauthorized();
   const { id, treatment } = await request.json().catch(() => ({}));
   if (!ID_RE.test(id || '')) return json({ error: 'id non valido' }, 400);
   if (treatment !== null && !isValidTreatment(treatment)) {

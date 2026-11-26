@@ -25,10 +25,10 @@ L'elenco dei trattamenti è in [`src/treatments.js`](src/treatments.js).
    (il resto è già in `vercel.json`).
 2. Progetto → **Storage** → **Create** → **Blob**, accesso **Public**, e
    collegalo al progetto: Vercel aggiunge da solo `BLOB_READ_WRITE_TOKEN`.
-3. **Settings → Environment Variables**: `APP_USERNAME` e `APP_PASSWORD`
-   (le credenziali condivise per entrare; lo username non distingue
-   maiuscole/minuscole). Senza queste due variabili il sito resta chiuso.
-4. Redeploy.
+3. Redeploy.
+
+Accesso libero: chiunque abbia il link vede la stessa pagina e può caricare,
+classificare, scaricare ed eliminare.
 
 ## Come sono salvati i dati
 

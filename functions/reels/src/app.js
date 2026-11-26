@@ -29,46 +29,15 @@ function toast(msg, ms = 3000) {
   if (ms) toastTimer = setTimeout(() => (t.hidden = true), ms);
 }
 
-// ---------- accesso + API ----------
-let creds = { u: store.get('reels-user') || '', p: store.get('reels-pw') || '' };
-
-function askLogin(errorMsg) {
-  return new Promise((resolve) => {
-    const dlg = $('#pw-dialog');
-    $('#user-input').value = creds.u;
-    $('#pw-input').value = '';
-    $('#pw-error').textContent = errorMsg || '';
-    dlg.addEventListener('close', () => {
-      creds = { u: $('#user-input').value.trim(), p: $('#pw-input').value };
-      store.set('reels-user', creds.u);
-      store.set('reels-pw', creds.p);
-      resolve();
-    }, { once: true });
-    dlg.showModal();
-  });
-}
-
+// ---------- API ----------
 async function api(path, body) {
-  let tried = false;
-  for (;;) {
-    const res = await fetch(path, {
-      method: body ? 'POST' : 'GET',
-      headers: {
-        'x-app-user': creds.u,
-        'x-app-password': creds.p,
-        ...(body ? { 'content-type': 'application/json' } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (res.status === 401) {
-      const err = (await res.json().catch(() => ({}))).error;
-      await askLogin(err === 'config' ? 'Accesso non configurato sul server (APP_USERNAME / APP_PASSWORD).' : tried || creds.p ? 'Username o password errati.' : '');
-      tried = true;
-      continue;
-    }
-    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Errore ${res.status}`);
-    return res.json();
-  }
+  const res = await fetch(path, {
+    method: body ? 'POST' : 'GET',
+    headers: body ? { 'content-type': 'application/json' } : {},
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `Errore ${res.status}`);
+  return res.json();
 }
 
 // ---------- stato ----------
@@ -193,7 +162,6 @@ async function uploadOne({ file, bar, state }) {
       await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: '/api/upload',
-        clientPayload: JSON.stringify(creds),
         contentType: file.type || undefined,
         multipart: file.size > 30 * 1024 * 1024,
         onUploadProgress: ({ percentage }) => {
@@ -207,7 +175,6 @@ async function uploadOne({ file, bar, state }) {
       uploadedCount++;
       return;
     } catch (err) {
-      if (/accesso negato/i.test(err.message)) { await askLogin('Username o password errati.'); attempt--; continue; }
       if (attempt === 3) {
         state.textContent = `errore: ${err.message}`;
         state.className = 'state err';
